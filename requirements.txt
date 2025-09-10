@@ -1,0 +1,25 @@
+# GUI Framework
+PyQt6==6.6.1
+PyQt6-Qt6==6.6.1
+
+# System and Process Management
+psutil==5.9.6
+
+# Configuration Management
+configparser==6.0.0
+
+# Logging and JSON
+colorlog==6.8.0
+
+# HTTP and Networking
+requests==2.31.0
+
+# File Handling
+pathlib2==2.3.7
+
+# Development and Testing
+pytest==7.4.3
+pytest-qt==4.2.0
+
+# Optional: For better UI themes
+qdarkstyle==3.2.3
