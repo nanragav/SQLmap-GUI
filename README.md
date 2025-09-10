@@ -441,8 +441,6 @@ This tool is designed for **educational and authorized security testing purposes
 
 ## 📞 Support
 
-- **Issues**: [GitHub Issues](https://github.com/yourusername/sqlmap-gui/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/sqlmap-gui/discussions)
 - **Documentation**: See [SQLmap_GUI_Plan.md](SQLmap_GUI_Plan.md) for technical details
 
 ---
