@@ -486,6 +486,11 @@ class SqlmapMainWindow(QMainWindow):
         about_action.triggered.connect(self.show_about)
         help_menu.addAction(about_action)
         
+        debug_action = QAction("Debug Tabs", self)
+        debug_action.setShortcut(QKeySequence("Ctrl+D"))
+        debug_action.triggered.connect(self.debug_tabs)
+        help_menu.addAction(debug_action)
+        
         sqlmap_help_action = QAction("SQLmap Help", self)
         sqlmap_help_action.triggered.connect(self.show_sqlmap_help)
         help_menu.addAction(sqlmap_help_action)
@@ -493,23 +498,41 @@ class SqlmapMainWindow(QMainWindow):
     def setup_tool_bar(self):
         """Setup application toolbar"""
         toolbar = QToolBar()
+        toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
         self.addToolBar(toolbar)
-        
+
         # Profile actions
-        toolbar.addAction("New", self.new_profile)
-        toolbar.addAction("Open", self.open_profile)
-        toolbar.addAction("Save", self.save_profile)
+        new_action = toolbar.addAction("New Window", self.new_profile)
+        new_action.setToolTip("Open a new SQLmap GUI window")
+
         toolbar.addSeparator()
-        
+
+        open_action = toolbar.addAction("Open", self.open_profile)
+        open_action.setToolTip("Load profile from file")
+
+        save_action = toolbar.addAction("Save", self.save_profile)
+        save_action.setToolTip("Save current profile to file")
+
+        toolbar.addSeparator()
+
         # Scan actions
-        toolbar.addAction("Start", lambda: self.start_scan(use_sudo=False))
-        toolbar.addAction("Start (Sudo)", lambda: self.start_scan(use_sudo=True))
-        toolbar.addAction("Stop", self.stop_scan)
+        start_action = toolbar.addAction("Start Scan", lambda: self.start_scan(use_sudo=False))
+        start_action.setToolTip("Start SQL injection scan")
+
+        start_sudo_action = toolbar.addAction("Start (Sudo)", lambda: self.start_scan(use_sudo=True))
+        start_sudo_action.setToolTip("Start SQL injection scan with sudo")
+
+        stop_action = toolbar.addAction("Stop", self.stop_scan)
+        stop_action.setToolTip("Stop current scan")
+
         toolbar.addSeparator()
-        
+
         # Utility actions
-        toolbar.addAction("Validate", self.validate_options)
-        toolbar.addAction("Reset", self.reset_options)
+        validate_action = toolbar.addAction("Validate", self.validate_options)
+        validate_action.setToolTip("Validate current options")
+
+        reset_action = toolbar.addAction("Reset", self.reset_options)
+        reset_action.setToolTip("Reset all options to defaults")
     
     def setup_connections(self):
         """Setup signal connections"""
@@ -754,62 +777,144 @@ class SqlmapMainWindow(QMainWindow):
     
     def reset_options(self):
         """Reset all options to defaults"""
-        reply = QMessageBox.question(self, "Reset Options", 
-                                   "Are you sure you want to reset all options to defaults?",
+        reply = QMessageBox.question(self, "Reset Options",
+                                   "Are you sure you want to reset all options to defaults?\n\n"
+                                   "This will clear all current settings and restore default values.",
                                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
-        
+
         if reply == QMessageBox.StandardButton.Yes:
             try:
+                reset_count = 0
+                error_tabs = []
+
+                # Reset each tab individually with error handling
                 for tab_name, tab in self.tabs.items():
-                    if hasattr(tab, 'reset_options'):
-                        tab.reset_options()
-                
+                    try:
+                        if hasattr(tab, 'reset_options'):
+                            tab.reset_options()
+                            reset_count += 1
+                    except Exception as e:
+                        error_tabs.append(f"{tab_name}: {str(e)}")
+                        print(f"Error resetting {tab_name}: {e}")
+
+                # Update command preview
                 self.update_command_preview()
-                self.log_widget.append_log("All options reset to defaults", "success")
-                
+
+                # Report results
+                if error_tabs:
+                    error_msg = "\n".join(error_tabs)
+                    QMessageBox.warning(self, "Reset Completed with Errors",
+                                      f"Successfully reset {reset_count} tabs, but encountered errors in:\n\n{error_msg}")
+                else:
+                    QMessageBox.information(self, "Reset Complete",
+                                          f"Successfully reset all {reset_count} tabs to default values.")
+
+                self.log_widget.append_log(f"Reset {reset_count} tabs to defaults", "success")
+                if error_tabs:
+                    self.log_widget.append_log(f"Errors in {len(error_tabs)} tabs during reset", "warning")
+
             except Exception as e:
-                self.log_widget.append_log(f"Error resetting options: {str(e)}", "error")
-                QMessageBox.critical(self, "Error", f"Failed to reset options: {str(e)}")
+                QMessageBox.critical(self, "Reset Error", f"Failed to reset options: {str(e)}")
+                self.log_widget.append_log(f"Failed to reset options: {str(e)}", "error")
     
     def new_profile(self):
-        """Create new profile"""
-        reply = QMessageBox.question(self, "New Profile", 
-                                   "Create a new profile? This will reset all current options.",
-                                   QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
-        
-        if reply == QMessageBox.StandardButton.Yes:
-            self.reset_options()
-            self.log_widget.append_log("New profile created", "info")
+        """Create new profile - opens a new window"""
+        try:
+            # Create a new instance of the main window
+            new_window = SqlmapMainWindow()
+            new_window.show()
+            
+            # Center the new window
+            screen = QApplication.primaryScreen().geometry()
+            window_rect = new_window.geometry()
+            x = (screen.width() - window_rect.width()) // 2
+            y = (screen.height() - window_rect.height()) // 2
+            new_window.move(x, y)
+            
+            self.log_widget.append_log("New SQLmap GUI window opened", "info")
+            
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Failed to create new window: {str(e)}")
+            self.log_widget.append_log(f"Failed to create new window: {str(e)}", "error")
     
     def open_profile(self):
         """Open profile from file"""
         from PyQt6.QtWidgets import QFileDialog
-        
+
         file_path, _ = QFileDialog.getOpenFileName(
             self,
             "Open Profile",
             "",
             "JSON Files (*.json);;All Files (*)"
         )
-        
+
         if file_path:
-            try:
-                import json
-                with open(file_path, 'r') as f:
-                    profile_data = json.load(f)
-                
-                # Load options into tabs
-                for tab_name, tab in self.tabs.items():
+            self.load_profile_from_file(file_path)
+
+    def load_profile_from_file(self, file_path: str):
+        """Load profile from specified file"""
+        try:
+            import json
+
+            # Load profile data
+            with open(file_path, 'r', encoding='utf-8') as f:
+                profile_data = json.load(f)
+
+            # Check if this is a valid SQLmap GUI profile
+            metadata = profile_data.get('_metadata', {})
+            if metadata.get('created_by') != 'SQLmap GUI':
+                reply = QMessageBox.question(self, "Unknown Profile Format",
+                                           "This doesn't appear to be a SQLmap GUI profile.\n"
+                                           "Try to load it anyway?",
+                                           QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+                if reply != QMessageBox.StandardButton.Yes:
+                    return
+
+            # Load options into tabs with error handling
+            loaded_tabs = 0
+            error_tabs = []
+
+            for tab_name, tab in self.tabs.items():
+                try:
                     if hasattr(tab, 'set_options'):
                         tab_options = profile_data.get(tab_name, {})
                         tab.set_options(tab_options)
-                
-                self.update_command_preview()
-                self.log_widget.append_log(f"Profile loaded from {file_path}", "success")
-                
-            except Exception as e:
-                QMessageBox.critical(self, "Error", f"Failed to load profile: {str(e)}")
-                self.log_widget.append_log(f"Failed to load profile: {str(e)}", "error")
+                        loaded_tabs += 1
+                except Exception as e:
+                    error_tabs.append(f"{tab_name}: {str(e)}")
+                    print(f"Error loading {tab_name}: {e}")
+
+            # Update command preview
+            self.update_command_preview()
+
+            # Report results
+            version = metadata.get('version', 'Unknown')
+            created = metadata.get('created_at', 'Unknown')
+
+            if error_tabs:
+                error_msg = "\n".join(error_tabs)
+                QMessageBox.warning(self, "Profile Loaded with Errors",
+                                  f"Profile loaded from {file_path}\n"
+                                  f"Version: {version}\n"
+                                  f"Created: {created}\n\n"
+                                  f"Loaded {loaded_tabs} tabs successfully, but encountered errors in:\n\n{error_msg}")
+            else:
+                QMessageBox.information(self, "Profile Loaded",
+                                      f"Profile loaded successfully from:\n{file_path}\n\n"
+                                      f"Version: {version}\n"
+                                      f"Created: {created}\n"
+                                      f"Loaded options for all {loaded_tabs} tabs.")
+
+            self.log_widget.append_log(f"Profile loaded from {file_path} ({loaded_tabs} tabs)", "success")
+            if error_tabs:
+                self.log_widget.append_log(f"Errors in {len(error_tabs)} tabs during load", "warning")
+
+        except json.JSONDecodeError as e:
+            QMessageBox.critical(self, "Invalid JSON", f"The selected file is not a valid JSON file:\n{str(e)}")
+            self.log_widget.append_log(f"Invalid JSON file: {file_path}", "error")
+        except Exception as e:
+            QMessageBox.critical(self, "Load Error", f"Failed to load profile: {str(e)}")
+            self.log_widget.append_log(f"Failed to load profile: {str(e)}", "error")
     
     def save_profile(self):
         """Save current profile"""
@@ -833,29 +938,56 @@ class SqlmapMainWindow(QMainWindow):
         """Save current profile to specified file"""
         try:
             import json
-            
-            # Collect all options from tabs
+            import datetime
+
+            # Collect all options from tabs with error handling
             profile_data = {}
+            saved_tabs = 0
+            error_tabs = []
+
             for tab_name, tab in self.tabs.items():
-                if hasattr(tab, 'get_options'):
-                    tab_options = tab.get_options()
-                    if tab_options:  # Only save non-empty options
-                        profile_data[tab_name] = tab_options
-            
-            # Add metadata
+                try:
+                    if hasattr(tab, 'get_options'):
+                        tab_options = tab.get_options()
+                        if tab_options:  # Only save non-empty options
+                            profile_data[tab_name] = tab_options
+                        saved_tabs += 1
+                except Exception as e:
+                    error_tabs.append(f"{tab_name}: {str(e)}")
+                    print(f"Error saving {tab_name}: {e}")
+
+            # Add comprehensive metadata
             profile_data['_metadata'] = {
                 'created_by': 'SQLmap GUI',
-                'version': '1.0',
-                'created_at': str(datetime.datetime.now())
+                'version': '1.0.0',
+                'created_at': datetime.datetime.now().isoformat(),
+                'total_tabs': len(self.tabs),
+                'saved_tabs': saved_tabs,
+                'errors': error_tabs if error_tabs else None,
+                'command_preview': self.command_preview.toPlainText() if hasattr(self, 'command_preview') else None
             }
-            
-            with open(file_path, 'w') as f:
-                json.dump(profile_data, f, indent=4)
-            
-            self.log_widget.append_log(f"Profile saved to {file_path}", "success")
-            
+
+            # Save to file with pretty formatting
+            with open(file_path, 'w', encoding='utf-8') as f:
+                json.dump(profile_data, f, indent=2, ensure_ascii=False)
+
+            # Report results
+            if error_tabs:
+                error_msg = "\n".join(error_tabs)
+                QMessageBox.warning(self, "Save Completed with Errors",
+                                  f"Profile saved to {file_path}\n\n"
+                                  f"Saved {saved_tabs} tabs successfully, but encountered errors in:\n\n{error_msg}")
+            else:
+                QMessageBox.information(self, "Save Complete",
+                                      f"Profile saved successfully to:\n{file_path}\n\n"
+                                      f"Saved options from all {saved_tabs} tabs.")
+
+            self.log_widget.append_log(f"Profile saved to {file_path} ({saved_tabs} tabs)", "success")
+            if error_tabs:
+                self.log_widget.append_log(f"Errors in {len(error_tabs)} tabs during save", "warning")
+
         except Exception as e:
-            QMessageBox.critical(self, "Error", f"Failed to save profile: {str(e)}")
+            QMessageBox.critical(self, "Save Error", f"Failed to save profile: {str(e)}")
             self.log_widget.append_log(f"Failed to save profile: {str(e)}", "error")
     
     def show_about(self):
@@ -879,10 +1011,126 @@ class SqlmapMainWindow(QMainWindow):
         
         QMessageBox.about(self, "About SQLmap GUI", about_text)
     
+    def debug_tabs(self):
+        """Debug tab integrity and functionality"""
+        try:
+            results = self.validate_tabs_integrity()
+
+            debug_info = f"""
+Tab Integrity Check Results:
+
+Total Tabs: {results['total_tabs']}
+Working Tabs: {results['working_tabs']}
+Problem Tabs: {results['total_tabs'] - results['working_tabs']}
+
+"""
+
+            if results['issues']:
+                debug_info += "Issues Found:\n" + "\n".join(f"• {issue}" for issue in results['issues'])
+            else:
+                debug_info += "✅ All tabs are working correctly!"
+
+            # Show current options summary
+            debug_info += "\n\nCurrent Options Summary:\n"
+            total_options = 0
+            for tab_name, tab in self.tabs.items():
+                try:
+                    options = tab.get_options()
+                    option_count = len(options)
+                    total_options += option_count
+                    debug_info += f"• {tab_name}: {option_count} options\n"
+                except Exception as e:
+                    debug_info += f"• {tab_name}: Error - {str(e)}\n"
+
+            debug_info += f"\nTotal Options Set: {total_options}"
+
+            QMessageBox.information(self, "Tab Debug Results", debug_info)
+
+        except Exception as e:
+            QMessageBox.critical(self, "Debug Error", f"Failed to debug tabs: {str(e)}")
+    
+    def validate_tabs_integrity(self):
+        """Validate that all tabs have required methods and are working properly"""
+        try:
+            validation_results = {
+                'total_tabs': len(self.tabs),
+                'working_tabs': 0,
+                'issues': []
+            }
+
+            for tab_name, tab in self.tabs.items():
+                tab_issues = []
+
+                # Check if tab has required methods
+                if not hasattr(tab, 'get_options'):
+                    tab_issues.append("Missing get_options method")
+                if not hasattr(tab, 'set_options'):
+                    tab_issues.append("Missing set_options method")
+                if not hasattr(tab, 'reset_options'):
+                    tab_issues.append("Missing reset_options method")
+
+                # Test get_options
+                if hasattr(tab, 'get_options'):
+                    try:
+                        options = tab.get_options()
+                        if not isinstance(options, dict):
+                            tab_issues.append("get_options doesn't return a dictionary")
+                    except Exception as e:
+                        tab_issues.append(f"get_options error: {str(e)}")
+
+                # Test reset_options
+                if hasattr(tab, 'reset_options'):
+                    try:
+                        tab.reset_options()
+                    except Exception as e:
+                        tab_issues.append(f"reset_options error: {str(e)}")
+
+                if tab_issues:
+                    validation_results['issues'].append(f"{tab_name}: {', '.join(tab_issues)}")
+                else:
+                    validation_results['working_tabs'] += 1
+
+            return validation_results
+
+        except Exception as e:
+            return {
+                'total_tabs': len(self.tabs),
+                'working_tabs': 0,
+                'issues': [f"Validation error: {str(e)}"]
+            }
+    
     def show_sqlmap_help(self):
-        """Show SQLmap help in dialog"""
-        # TODO: Implement SQLmap help dialog
-        QMessageBox.information(self, "Not Implemented", "SQLmap help dialog will be implemented soon.")
+        """Show SQLmap help information"""
+        help_text = """
+        <h2>SQLmap Help</h2>
+        
+        <p><b>SQLmap</b> is an open-source penetration testing tool that automates the process of detecting and exploiting SQL injection flaws.</p>
+        
+        <p><b>Basic Usage:</b></p>
+        <pre>sqlmap -u "http://example.com/page.php?id=1"</pre>
+        
+        <p><b>Common Options:</b></p>
+        <ul>
+        <li><code>-u URL</code> - Target URL</li>
+        <li><code>--dbs</code> - Enumerate databases</li>
+        <li><code>--tables</code> - Enumerate tables</li>
+        <li><code>--columns</code> - Enumerate columns</li>
+        <li><code>--dump</code> - Dump table contents</li>
+        <li><code>--batch</code> - Never ask for user input</li>
+        </ul>
+        
+        <p><b>Advanced Options:</b></p>
+        <ul>
+        <li><code>--level=LEVEL</code> - Level of tests to perform (1-5)</li>
+        <li><code>--risk=RISK</code> - Risk of tests to perform (1-3)</li>
+        <li><code>--technique=TECH</code> - SQL injection techniques to use</li>
+        <li><code>--dbms=DBMS</code> - Force back-end DBMS</li>
+        </ul>
+        
+        <p><b>Documentation:</b> <a href="https://sqlmap.org">https://sqlmap.org</a></p>
+        """
+        
+        QMessageBox.information(self, "SQLmap Help", help_text)
     
     def load_settings(self):
         """Load application settings"""
