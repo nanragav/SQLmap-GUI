@@ -397,4 +397,4 @@ This tool is for educational and authorized security testing purposes only. User
 **Happy SQL Injection Testing! 🔒🛡️**
 
 For questions, issues, or contributions, please visit our [GitHub repository](https://github.com/nanragav/SQLmap-GUI).</content>
-<parameter name="filePath">/home/devil/Desktop/SQLmap-GUI-Advanced-SQL-Injection-Testing-Interface/docs/README.md
+<parameter name="filePath">
