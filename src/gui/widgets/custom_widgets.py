@@ -320,10 +320,17 @@ class StatusBar(QWidget):
         super().__init__(parent)
         self.setup_ui()
         
-        # Timer for updating resource info
+        # Timer for updating resource info - less frequent and more efficient
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_resources)
-        self.timer.start(2000)  # Update every 2 seconds
+        self.timer.start(5000)  # Update every 5 seconds instead of 2
+        
+        # Cache for resource values to avoid unnecessary updates
+        self.last_memory_mb = 0
+        self.last_cpu_percent = 0.0
+        
+        # Flag to control monitoring
+        self.monitoring_enabled = True
     
     def setup_ui(self):
         """Setup status bar UI"""
@@ -367,25 +374,127 @@ class StatusBar(QWidget):
         self.progress_bar.setValue(value)
     
     def update_resources(self):
-        """Update resource usage display"""
+        """Update resource usage display - optimized version"""
+        if not self.monitoring_enabled:
+            return
+            
         try:
             import psutil
-            process = psutil.Process()
+            import os
+            
+            # Get current process
+            current_pid = os.getpid()
+            process = psutil.Process(current_pid)
             
             # Memory usage
-            memory_mb = process.memory_info().rss / 1024 / 1024
-            self.memory_label.setText(f"Memory: {memory_mb:.1f} MB")
+            memory_info = process.memory_info()
+            memory_mb = memory_info.rss / 1024 / 1024
             
-            # CPU usage
-            cpu_percent = process.cpu_percent()
-            self.cpu_label.setText(f"CPU: {cpu_percent:.1f}%")
+            # Only update if memory changed significantly (>1MB difference)
+            if abs(memory_mb - self.last_memory_mb) > 1.0:
+                self.memory_label.setText(f"Memory: {memory_mb:.1f} MB")
+                self.last_memory_mb = memory_mb
+            
+            # CPU usage - use interval for more accurate measurement
+            try:
+                cpu_percent = process.cpu_percent(interval=0.5)  # Shorter interval for accuracy
+                
+                # Only update if CPU changed significantly (>1% difference)
+                if abs(cpu_percent - self.last_cpu_percent) > 1.0:
+                    if cpu_percent >= 0:  # Valid CPU percentage
+                        self.cpu_label.setText(f"CPU: {cpu_percent:.1f}%")
+                        self.last_cpu_percent = cpu_percent
+                    else:
+                        self.cpu_label.setText("CPU: 0.0%")
+                        self.last_cpu_percent = 0.0
+                        
+            except Exception as cpu_error:
+                # Fallback: try without interval
+                try:
+                    cpu_percent = process.cpu_percent()
+                    if abs(cpu_percent - self.last_cpu_percent) > 1.0:
+                        self.cpu_label.setText(f"CPU: {cpu_percent:.1f}%")
+                        self.last_cpu_percent = cpu_percent
+                except Exception:
+                    if self.last_cpu_percent != -1:  # Only update once
+                        self.cpu_label.setText("CPU: N/A")
+                        self.last_cpu_percent = -1
             
         except ImportError:
-            # psutil not available
-            pass
-        except Exception:
-            # Error getting process info
-            pass
+            # psutil not available - only update once
+            if self.last_memory_mb == 0:
+                self.memory_label.setText("Memory: N/A")
+                self.cpu_label.setText("CPU: N/A")
+                self.last_memory_mb = -1
+                self.last_cpu_percent = -1
+        except Exception as e:
+            # Error getting process info - only update once
+            if self.last_memory_mb == 0:
+                self.memory_label.setText("Memory: Error")
+                self.cpu_label.setText("CPU: Error")
+                self.last_memory_mb = -1
+                self.last_cpu_percent = -1
+    
+    def set_monitoring_enabled(self, enabled: bool):
+        """Enable or disable resource monitoring"""
+        self.monitoring_enabled = enabled
+        if enabled:
+            # Reset cache when re-enabling
+            self.last_memory_mb = 0
+            self.last_cpu_percent = 0.0
+            # Update immediately
+            self.update_resources()
+        else:
+            self.memory_label.setText("Memory: Paused")
+            self.cpu_label.setText("CPU: Paused")
+    
+    def force_update(self):
+        """Force an immediate resource update"""
+        self.last_memory_mb = 0  # Reset cache to force update
+        self.last_cpu_percent = 0.0
+        self.update_resources()
+    
+    def debug_cpu_monitoring(self):
+        """Debug method to check CPU monitoring status"""
+        try:
+            import psutil
+            import os
+            
+            debug_info = "CPU Monitoring Debug Info:\n"
+            
+            # Check psutil version
+            debug_info += f"psutil version: {psutil.__version__}\n"
+            
+            # Get current process
+            current_pid = os.getpid()
+            process = psutil.Process(current_pid)
+            debug_info += f"Current PID: {current_pid}\n"
+            
+            # Check if process exists
+            debug_info += f"Process exists: {process.is_running()}\n"
+            
+            # Try CPU measurement
+            try:
+                cpu_percent = process.cpu_percent(interval=0.1)
+                debug_info += f"CPU percent (0.1s interval): {cpu_percent}%\n"
+            except Exception as e:
+                debug_info += f"CPU percent error: {e}\n"
+            
+            # Try without interval
+            try:
+                cpu_percent_no_interval = process.cpu_percent()
+                debug_info += f"CPU percent (no interval): {cpu_percent_no_interval}%\n"
+            except Exception as e:
+                debug_info += f"CPU percent (no interval) error: {e}\n"
+            
+            # System CPU info
+            debug_info += f"System CPU count: {psutil.cpu_count()}\n"
+            debug_info += f"System CPU percent: {psutil.cpu_percent()}%\n"
+            
+            return debug_info
+            
+        except Exception as e:
+            return f"Debug error: {e}"
 
 
 class LogWidget(QTextEdit):
@@ -394,7 +503,6 @@ class LogWidget(QTextEdit):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setReadOnly(True)
-        # Note: setMaximumBlockCount is not available in PyQt6, we'll handle log size manually
         
         # Setup font
         font = QFont("Consolas", 9)
@@ -404,7 +512,20 @@ class LogWidget(QTextEdit):
         self.auto_scroll = True
     
     def append_log(self, text: str, log_type: str = "info"):
-        """Append log entry with styling"""
+        """Append log entry with styling - optimized version"""
+        # Limit log size to prevent memory issues
+        if self.document().blockCount() >= 1000:
+            # Remove oldest entries (keep last 800 lines)
+            cursor = self.textCursor()
+            cursor.movePosition(cursor.MoveOperation.Start)
+            cursor.movePosition(cursor.MoveOperation.Down, cursor.MoveOperation.MoveAnchor, 200)
+            cursor.movePosition(cursor.MoveOperation.End, cursor.MoveOperation.KeepAnchor)
+            cursor.removeSelectedText()
+            
+            # Disable auto-scroll for large logs to improve performance
+            if self.document().blockCount() > 500:
+                self.auto_scroll = False
+        
         color_map = {
             "info": "black",
             "warning": "#ff8c00",
@@ -441,6 +562,16 @@ class LogWidget(QTextEdit):
     def set_auto_scroll(self, enabled: bool):
         """Enable/disable auto-scrolling"""
         self.auto_scroll = enabled
+    
+    def optimize_log_size(self):
+        """Optimize log size by removing old entries"""
+        if self.document().blockCount() > 500:
+            # Keep only the last 500 lines
+            cursor = self.textCursor()
+            cursor.movePosition(cursor.MoveOperation.Start)
+            cursor.movePosition(cursor.MoveOperation.Down, cursor.MoveOperation.MoveAnchor, self.document().blockCount() - 500)
+            cursor.movePosition(cursor.MoveOperation.End, cursor.MoveOperation.KeepAnchor)
+            cursor.removeSelectedText()
 
 
 class CollapsibleWidget(QWidget):

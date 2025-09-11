@@ -76,8 +76,30 @@ class SqlmapMainWindow(QMainWindow):
     def setup_ui(self):
         """Setup the main UI layout"""
         self.setWindowTitle("SQLmap GUI - SQL Injection Testing Tool")
-        self.setMinimumSize(1200, 800)
-        self.resize(1400, 900)
+        
+        # Get screen size and set appropriate window size
+        screen = QApplication.primaryScreen().geometry()
+        screen_width = screen.width()
+        screen_height = screen.height()
+        
+        # Calculate optimal window size (80% of screen size, but not larger than 1600x1000)
+        optimal_width = min(int(screen_width * 0.8), 1600)
+        optimal_height = min(int(screen_height * 0.8), 1000)
+        
+        # Set minimum size to ensure usability
+        min_width = min(1200, optimal_width)
+        min_height = min(800, optimal_height)
+        
+        self.setMinimumSize(min_width, min_height)
+        self.resize(optimal_width, optimal_height)
+        
+        # Center the window on screen
+        x = (screen_width - optimal_width) // 2
+        y = (screen_height - optimal_height) // 2
+        self.move(x, y)
+        
+        # Make window resizable
+        self.setWindowFlags(self.windowFlags() | Qt.WindowType.WindowMaximizeButtonHint)
         
         # Central widget
         central_widget = QWidget()
@@ -94,8 +116,10 @@ class SqlmapMainWindow(QMainWindow):
         right_panel = self.create_right_panel()
         main_splitter.addWidget(right_panel)
         
-        # Set splitter proportions
-        main_splitter.setSizes([800, 600])
+        # Set splitter proportions based on window size
+        left_width = int(optimal_width * 0.6)  # 60% for tabs
+        right_width = optimal_width - left_width
+        main_splitter.setSizes([left_width, right_width])
         
         # Layout
         layout = QVBoxLayout()
@@ -491,9 +515,33 @@ class SqlmapMainWindow(QMainWindow):
         debug_action.triggered.connect(self.debug_tabs)
         help_menu.addAction(debug_action)
         
-        sqlmap_help_action = QAction("SQLmap Help", self)
-        sqlmap_help_action.triggered.connect(self.show_sqlmap_help)
-        help_menu.addAction(sqlmap_help_action)
+        # Add CPU monitoring debug action
+        cpu_debug_action = QAction("Debug CPU Monitoring", self)
+        cpu_debug_action.triggered.connect(self.debug_cpu_monitoring)
+        help_menu.addAction(cpu_debug_action)
+        
+        # Add performance control actions
+        help_menu.addSeparator()
+        
+        performance_menu = help_menu.addMenu("Performance")
+        
+        self.high_perf_action = QAction("High Performance Mode", self)
+        self.high_perf_action.setCheckable(True)
+        self.high_perf_action.setChecked(False)
+        self.high_perf_action.triggered.connect(self.toggle_performance_mode)
+        performance_menu.addAction(self.high_perf_action)
+        
+        pause_monitoring_action = QAction("Pause Resource Monitoring", self)
+        pause_monitoring_action.triggered.connect(self.pause_resource_monitoring)
+        performance_menu.addAction(pause_monitoring_action)
+        
+        resume_monitoring_action = QAction("Resume Resource Monitoring", self)
+        resume_monitoring_action.triggered.connect(self.resume_resource_monitoring)
+        performance_menu.addAction(resume_monitoring_action)
+        
+        optimize_action = QAction("Optimize Performance", self)
+        optimize_action.triggered.connect(self.optimize_performance)
+        performance_menu.addAction(optimize_action)
     
     def setup_tool_bar(self):
         """Setup application toolbar"""
@@ -546,42 +594,75 @@ class SqlmapMainWindow(QMainWindow):
         # Tab change connection to update command preview
         self.tab_widget.currentChanged.connect(self.update_command_preview)
         
-        # Connect tab signals for option changes
+        # Connect tab signals for option changes with throttling
         for tab in self.tabs.values():
             if hasattr(tab, 'options_changed'):
-                tab.options_changed.connect(self.update_command_preview)
+                tab.options_changed.connect(self.schedule_command_preview_update)
         
-        # Update command preview periodically to catch all changes
+        # Initialize command preview update timer with longer interval
         self.command_timer = QTimer()
         self.command_timer.timeout.connect(self.update_command_preview)
-        self.command_timer.start(1000)  # Update every second
+        self.command_timer.setSingleShot(True)  # Only run once when triggered
+        
+        # Initialize delayed update timer for throttling
+        self.delayed_update_timer = QTimer()
+        self.delayed_update_timer.timeout.connect(self.trigger_command_preview_update)
+        self.delayed_update_timer.setSingleShot(True)
+        
+        # Flag to track if update is pending
+        self.command_preview_update_pending = False
+    
+    def schedule_command_preview_update(self):
+        """Schedule a throttled command preview update"""
+        if not self.command_preview_update_pending:
+            self.command_preview_update_pending = True
+            # Delay update by 500ms to avoid excessive updates during rapid changes
+            self.delayed_update_timer.start(500)
+    
+    def trigger_command_preview_update(self):
+        """Trigger the actual command preview update"""
+        self.command_preview_update_pending = False
+        self.update_command_preview()
     
     def update_command_preview(self):
-        """Update the command preview with current options"""
+        """Update the command preview with current options - optimized version"""
         try:
             # Store current scroll position
             scrollbar = self.command_preview.verticalScrollBar()
             scroll_position = scrollbar.value()
             
-            # Collect all options from tabs
+            # Collect all options from tabs - optimized to avoid unnecessary work
             all_options = {}
             for tab_name, tab in self.tabs.items():
                 if hasattr(tab, 'get_options'):
-                    tab_options = tab.get_options()
-                    all_options.update(tab_options)
+                    try:
+                        tab_options = tab.get_options()
+                        if tab_options:  # Only add non-empty options
+                            all_options.update(tab_options)
+                    except Exception as e:
+                        # Log error but don't crash the entire update
+                        print(f"Error getting options from {tab_name}: {e}")
+                        continue
             
             # Build command using wrapper with auto_batch setting
             command = self.sqlmap_wrapper.build_command(all_options, force_batch=True)
             
             # Display in preview with proper formatting
             formatted_command = ' '.join(command)
-            self.command_preview.setPlainText(formatted_command)
+            
+            # Only update if the command has actually changed
+            current_text = self.command_preview.toPlainText()
+            if formatted_command != current_text:
+                self.command_preview.setPlainText(formatted_command)
             
             # Restore scroll position
             scrollbar.setValue(scroll_position)
             
         except Exception as e:
-            self.command_preview.setPlainText(f"Error building command: {str(e)}")
+            error_msg = f"Error building command: {str(e)}"
+            current_text = self.command_preview.toPlainText()
+            if not current_text.startswith("Error"):
+                self.command_preview.setPlainText(error_msg)
     
     def start_scan(self, use_sudo: bool = False):
         """Start SQLmap scan"""
@@ -824,12 +905,25 @@ class SqlmapMainWindow(QMainWindow):
             new_window = SqlmapMainWindow()
             new_window.show()
             
-            # Center the new window
+            # Get screen geometry for proper positioning
             screen = QApplication.primaryScreen().geometry()
-            window_rect = new_window.geometry()
-            x = (screen.width() - window_rect.width()) // 2
-            y = (screen.height() - window_rect.height()) // 2
-            new_window.move(x, y)
+            new_window_rect = new_window.geometry()
+            
+            # Position new window slightly offset from current window
+            current_pos = self.pos()
+            offset_x = 30
+            offset_y = 30
+            
+            # Ensure new window stays within screen bounds
+            new_x = min(current_pos.x() + offset_x, screen.width() - new_window_rect.width())
+            new_y = min(current_pos.y() + offset_y, screen.height() - new_window_rect.height())
+            
+            # If offset would go off-screen, center it instead
+            if new_x + new_window_rect.width() > screen.width() or new_y + new_window_rect.height() > screen.height():
+                new_x = (screen.width() - new_window_rect.width()) // 2
+                new_y = (screen.height() - new_window_rect.height()) // 2
+            
+            new_window.move(new_x, new_y)
             
             self.log_widget.append_log("New SQLmap GUI window opened", "info")
             
@@ -1099,6 +1193,61 @@ Problem Tabs: {results['total_tabs'] - results['working_tabs']}
                 'issues': [f"Validation error: {str(e)}"]
             }
     
+    def toggle_performance_mode(self):
+        """Toggle between normal and high performance mode"""
+        if self.high_perf_action.isChecked():
+            # High performance mode: reduce updates, disable monitoring
+            self.pause_resource_monitoring()
+            self.command_timer.stop()
+            self.delayed_update_timer.stop()
+            self.log_widget.append_log("High performance mode enabled - reduced updates", "info")
+        else:
+            # Normal mode: resume all updates
+            self.resume_resource_monitoring()
+            self.log_widget.append_log("Normal performance mode restored", "info")
+    
+    def pause_resource_monitoring(self):
+        """Pause resource monitoring to improve performance"""
+        try:
+            self.status_bar.set_monitoring_enabled(False)
+            self.log_widget.append_log("Resource monitoring paused", "info")
+        except Exception as e:
+            self.log_widget.append_log(f"Failed to pause monitoring: {str(e)}", "warning")
+    
+    def resume_resource_monitoring(self):
+        """Resume resource monitoring"""
+        try:
+            self.status_bar.set_monitoring_enabled(True)
+            self.log_widget.append_log("Resource monitoring resumed", "info")
+        except Exception as e:
+            self.log_widget.append_log(f"Failed to resume monitoring: {str(e)}", "warning")
+    
+    def optimize_performance(self):
+        """Optimize application performance"""
+        try:
+            # Optimize log widget
+            self.log_widget.optimize_log_size()
+            
+            # Force garbage collection
+            import gc
+            gc.collect()
+            
+            # Update status
+            self.status_bar.force_update()
+            
+            self.log_widget.append_log("Performance optimization completed", "success")
+            
+        except Exception as e:
+            self.log_widget.append_log(f"Performance optimization failed: {str(e)}", "warning")
+    
+    def debug_cpu_monitoring(self):
+        """Debug CPU monitoring functionality"""
+        try:
+            debug_info = self.status_bar.debug_cpu_monitoring()
+            QMessageBox.information(self, "CPU Monitoring Debug", debug_info)
+        except Exception as e:
+            QMessageBox.critical(self, "Debug Error", f"Failed to debug CPU monitoring: {str(e)}")
+    
     def show_sqlmap_help(self):
         """Show SQLmap help information"""
         help_text = """
@@ -1162,6 +1311,19 @@ Problem Tabs: {results['total_tabs'] - results['working_tabs']}
             else:
                 event.ignore()
                 return
+        
+        # Stop all timers to prevent resource leaks
+        try:
+            if hasattr(self, 'command_timer') and self.command_timer:
+                self.command_timer.stop()
+            if hasattr(self, 'delayed_update_timer') and self.delayed_update_timer:
+                self.delayed_update_timer.stop()
+            if hasattr(self, 'status_bar') and self.status_bar:
+                # Stop the status bar timer
+                if hasattr(self.status_bar, 'timer'):
+                    self.status_bar.timer.stop()
+        except Exception as e:
+            print(f"Error stopping timers: {e}")
         
         # Save settings
         self.save_settings()
