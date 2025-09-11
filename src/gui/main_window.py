@@ -14,6 +14,8 @@ from PyQt6.QtGui import QIcon, QKeySequence, QFont, QAction
 import os
 import sys
 import datetime
+import time
+import re
 from typing import Dict, Any, Optional
 
 # Add parent directories to path for imports
@@ -596,14 +598,30 @@ class SqlmapMainWindow(QMainWindow):
             # Get sudo password if needed
             sudo_password = None
             if use_sudo:
-                sudo_password, ok = QInputDialog.getText(
-                    self, 
-                    "Sudo Password", 
-                    "Enter sudo password:", 
-                    QLineEdit.EchoMode.Password
-                )
-                if not ok:
-                    return
+                # Check if sudo is actually needed for sqlmap
+                reply = QMessageBox.question(self, "Sudo Confirmation", 
+                                           "Are you sure you need to run SQLmap with sudo privileges?\n\n"
+                                           "SQLmap typically doesn't require sudo unless you're:\n"
+                                           "• Accessing privileged system resources\n"
+                                           "• Binding to privileged ports (< 1024)\n"
+                                           "• Running sqlmap with special system permissions\n\n"
+                                           "Using sudo unnecessarily can be a security risk.",
+                                           QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+                
+                if reply == QMessageBox.StandardButton.Yes:
+                    sudo_password, ok = QInputDialog.getText(
+                        self, 
+                        "Sudo Password", 
+                        "Enter sudo password:", 
+                        QLineEdit.EchoMode.Password
+                    )
+                    if not ok or not sudo_password:
+                        self.log_widget.append_log("Sudo password not provided - scan cancelled", "warning")
+                        return
+                else:
+                    # User decided not to use sudo
+                    use_sudo = False
+                    self.log_widget.append_log("Sudo cancelled by user - running without sudo", "info")
             
             # Create and start the scan thread
             self.current_scan_thread = SqlmapScanThread(
@@ -918,6 +936,15 @@ class SqlmapScanThread(QThread):
         self.sudo_password = sudo_password
         self.should_stop = False
     
+    def clean_ansi_escape_sequences(self, text: str) -> str:
+        """Remove ANSI escape sequences from text - comprehensive pattern"""
+        # More comprehensive ANSI escape sequence regex
+        ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])|\x1B\[[0-9;]*[mG]|\x1B\([AB0-9]|\x1B\)[AB0-9]|\x1B[=>]')
+        cleaned = ansi_escape.sub('', text)
+        # Also remove any remaining control characters
+        cleaned = re.sub(r'[\x00-\x1F\x7F]', '', cleaned)
+        return cleaned
+    
     def run(self):
         """Run the scan"""
         try:
@@ -925,24 +952,50 @@ class SqlmapScanThread(QThread):
             process = self.sqlmap_wrapper.create_process(self.options, self.use_sudo, self.sudo_password)
             
             if not process:
-                self.log_message.emit("Failed to create SQLmap process", "error")
+                self.log_message.emit("Failed to create SQLmap process - check SQLmap installation and PATH", "error")
                 self.scan_finished.emit(False)
                 return
             
             # Start process
             if not process.start():
-                self.log_message.emit("Failed to start SQLmap process", "error")
+                self.log_message.emit("Failed to start SQLmap process - check command syntax and permissions", "error")
                 self.scan_finished.emit(False)
                 return
             
             sudo_text = " with sudo" if self.use_sudo else ""
             self.log_message.emit(f"SQLmap process started successfully{sudo_text}", "info")
             
+            # Wait a moment to see if the process produces any immediate output
+            time.sleep(1)
+            
+            # Check if process is still running and get initial output
+            initial_output = process.get_output()
+            if initial_output:
+                for line in initial_output:
+                    cleaned_line = self.clean_ansi_escape_sequences(line)
+                    if cleaned_line.strip():  # Only emit non-empty lines
+                        self.log_message.emit(cleaned_line, "info")
+            
+            initial_errors = process.get_errors()
+            if initial_errors:
+                for line in initial_errors:
+                    cleaned_line = self.clean_ansi_escape_sequences(line)
+                    if cleaned_line.strip():
+                        self.log_message.emit(f"Error: {cleaned_line}", "error")
+            
             # Monitor process output
             while process.is_running and not self.should_stop:
                 output = process.read_output()
                 if output:
-                    self.log_message.emit(output.strip(), "info")
+                    cleaned_output = self.clean_ansi_escape_sequences(output.strip())
+                    if cleaned_output:  # Only emit non-empty cleaned output
+                        self.log_message.emit(cleaned_output, "info")
+                
+                error = process.read_error()
+                if error:
+                    cleaned_error = self.clean_ansi_escape_sequences(error.strip())
+                    if cleaned_error:
+                        self.log_message.emit(f"Error: {cleaned_error}", "error")
                 
                 self.msleep(100)  # Small delay to prevent excessive CPU usage
             
@@ -959,6 +1012,21 @@ class SqlmapScanThread(QThread):
                     self.scan_finished.emit(True)
                 else:
                     self.log_message.emit(f"Scan failed with exit code {exit_code}", "error")
+                    # Try to get any remaining output
+                    final_output = process.get_output()
+                    if final_output:
+                        for line in final_output:
+                            cleaned_line = self.clean_ansi_escape_sequences(line)
+                            if cleaned_line.strip():
+                                self.log_message.emit(f"Final output: {cleaned_line}", "info")
+                    
+                    final_errors = process.get_errors()
+                    if final_errors:
+                        for line in final_errors:
+                            cleaned_line = self.clean_ansi_escape_sequences(line)
+                            if cleaned_line.strip():
+                                self.log_message.emit(f"Final error: {cleaned_line}", "error")
+                    
                     self.scan_finished.emit(False)
                 
         except Exception as e:
