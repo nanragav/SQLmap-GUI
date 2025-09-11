@@ -34,9 +34,7 @@ class FingerprintTab(QWidget):
         fingerprint_group = self.create_fingerprint_group()
         layout.addWidget(fingerprint_group)
         
-        # DBMS detection group
-        detection_group = self.create_detection_group()
-        layout.addWidget(detection_group)
+        # Removed empty DBMS Detection group
         
         layout.addStretch()
         scroll_content.setLayout(layout)
@@ -53,74 +51,14 @@ class FingerprintTab(QWidget):
                 'name': 'fingerprint',
                 'type': 'checkbox',
                 'label': 'Perform Extensive DBMS Version Fingerprinting'
-            },
-            {
-                'name': 'banner',
-                'type': 'checkbox',
-                'label': 'Retrieve DBMS Banner'
-            },
-            {
-                'name': 'hostname',
-                'type': 'checkbox',
-                'label': 'Retrieve DBMS Server Hostname'
-            },
-            {
-                'name': 'current_user',
-                'type': 'checkbox',
-                'label': 'Retrieve DBMS Current User'
-            },
-            {
-                'name': 'current_db',
-                'type': 'checkbox',
-                'label': 'Retrieve DBMS Current Database'
-            },
-            {
-                'name': 'is_dba',
-                'type': 'checkbox',
-                'label': 'Detect if Current User is DBA'
             }
+            # Removed duplicate enumeration options (already exist in Enumeration tab)
+            # banner, hostname, current_user, current_db, is_dba
         ]
         
         return OptionGroup("Fingerprinting", fingerprint_options, self.mutual_exclusion_manager)
     
-    def create_detection_group(self) -> QGroupBox:
-        """Create DBMS detection options"""
-        detection_options = [
-            {
-                'name': 'dbms',
-                'type': 'combo',
-                'label': 'Force Back-end DBMS',
-                'items': [
-                    {'label': 'Auto-detect', 'value': ''},
-                    {'label': 'MySQL', 'value': 'mysql'},
-                    {'label': 'PostgreSQL', 'value': 'postgresql'},
-                    {'label': 'Microsoft SQL Server', 'value': 'mssql'},
-                    {'label': 'Oracle', 'value': 'oracle'},
-                    {'label': 'SQLite', 'value': 'sqlite'},
-                    {'label': 'Microsoft Access', 'value': 'access'},
-                    {'label': 'Firebird', 'value': 'firebird'},
-                    {'label': 'IBM DB2', 'value': 'db2'},
-                    {'label': 'SAP MaxDB', 'value': 'maxdb'},
-                    {'label': 'Sybase', 'value': 'sybase'},
-                    {'label': 'Informix', 'value': 'informix'},
-                    {'label': 'HSQLDB', 'value': 'hsqldb'},
-                    {'label': 'H2', 'value': 'h2'}
-                ]
-            },
-            {
-                'name': 'os',
-                'type': 'combo',
-                'label': 'Force Back-end OS',
-                'items': [
-                    {'label': 'Auto-detect', 'value': ''},
-                    {'label': 'Linux', 'value': 'linux'},
-                    {'label': 'Windows', 'value': 'windows'},
-                    {'label': 'Unix', 'value': 'unix'}
-                ]
-            }
-        ]
-        
-        return OptionGroup("DBMS Detection", detection_options, self.mutual_exclusion_manager)
+    # Removed create_detection_group method
     
     def get_options(self) -> Dict[str, Any]:
         """Get all options from this tab"""

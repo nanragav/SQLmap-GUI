@@ -387,6 +387,9 @@ class SqlmapWrapper:
             'auth_cred': {'flag': '--auth-cred', 'type': 'quoted_arg'},
             'proxy': {'flag': '--proxy', 'type': 'quoted_arg'},
             'tor': {'flag': '--tor', 'type': 'flag'},
+            'tor_port': {'flag': '--tor-port', 'type': 'quoted_arg'},
+            'tor_type': {'flag': '--tor-type', 'type': 'quoted_arg'},
+            'check_tor': {'flag': '--check-tor', 'type': 'flag'},
             
             # INJECTION PARAMETERS
             'testable_parameter': {'flag': '-p', 'type': 'quoted_arg'},
@@ -415,6 +418,7 @@ class SqlmapWrapper:
             'dns_domain': {'flag': '--dns-domain', 'type': 'quoted_arg'},
             'second_url': {'flag': '--second-url', 'type': 'quoted_arg'},
             'second_req': {'flag': '--second-req', 'type': 'quoted_arg'},
+            'time_sec': {'flag': '--time-sec', 'type': 'quoted_arg'},
             
             # DETECTION PARAMETERS
             'level': {'flag': '--level', 'type': 'quoted_arg'},
@@ -498,9 +502,12 @@ class SqlmapWrapper:
             'answers': {'flag': '--answers', 'type': 'quoted_arg'},
             'forms': {'flag': '--forms', 'type': 'flag'},
             'crawl': {'flag': '--crawl', 'type': 'quoted_arg'},
+            'crawl_exclude': {'flag': '--crawl-exclude', 'type': 'quoted_arg'},
             'charset': {'flag': '--charset', 'type': 'quoted_arg'},
             'encoding': {'flag': '--encoding', 'type': 'quoted_arg'},
             'base64': {'flag': '--base64', 'type': 'quoted_arg'},
+            'base64_safe': {'flag': '--base64-safe', 'type': 'flag'},
+            'web_root': {'flag': '--web-root', 'type': 'quoted_arg'},
             'force_ssl': {'flag': '--force-ssl', 'type': 'flag'},
             
             # MISCELLANEOUS
@@ -514,8 +521,8 @@ class SqlmapWrapper:
             'skip_waf': {'flag': '--skip-waf', 'type': 'flag'},
             'unstable': {'flag': '--unstable', 'type': 'flag'},
             'session_file': {'flag': '-s', 'type': 'quoted_arg'},
-            'traffic_file': {'flag': '-t', 'type': 'quoted_arg'},
-            'output_dir': {'flag': '--output-dir', 'type': 'quoted_arg'},
+            'traffic_file': {'flag': '--traffic-file', 'type': 'quoted_arg'},
+            'output_dir': {'flag': '-o', 'type': 'quoted_arg'},
             'fingerprint': {'flag': '--fingerprint', 'type': 'flag'},
             'keep_alive': {'flag': '--keep-alive', 'type': 'flag'},
             'null_connection': {'flag': '--null-connection', 'type': 'flag'},

@@ -253,21 +253,8 @@ class EnumerationTab(QWidget):
                 'label': 'Execute SQL Statements from File',
                 'filter': 'SQL Files (*.sql);;Text Files (*.txt);;All Files (*)'
             },
-            {
-                'name': 'common_tables',
-                'type': 'checkbox',
-                'label': 'Check Existence of Common Tables'
-            },
-            {
-                'name': 'common_columns',
-                'type': 'checkbox',
-                'label': 'Check Existence of Common Columns'
-            },
-            {
-                'name': 'common_files',
-                'type': 'checkbox',
-                'label': 'Check Existence of Common Files'
-            },
+            # Removed duplicate brute force options (already exist in Brute Force tab)
+            # common_tables, common_columns, common_files
             {
                 'name': 'udf_inject',
                 'type': 'checkbox',

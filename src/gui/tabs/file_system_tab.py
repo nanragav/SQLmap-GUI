@@ -60,23 +60,20 @@ class FileSystemTab(BaseTab):
         
         layout.addWidget(write_group)
         
-        # File upload options
-        upload_group = QGroupBox("File Upload")
-        upload_layout = QFormLayout(upload_group)
+        # File upload options - REMOVED (empty section)
+        # upload_group = QGroupBox("File Upload")
+        # upload_layout = QFormLayout(upload_group)
+        # layout.addWidget(upload_group)
         
-        layout.addWidget(upload_group)
+        # File permissions - REMOVED (empty section)
+        # perms_group = QGroupBox("File Permissions")
+        # perms_layout = QFormLayout(perms_group)
+        # layout.addWidget(perms_group)
         
-        # File permissions
-        perms_group = QGroupBox("File Permissions")
-        perms_layout = QFormLayout(perms_group)
-        
-        layout.addWidget(perms_group)
-        
-        # Advanced options
-        advanced_group = QGroupBox("Advanced Options")
-        advanced_layout = QFormLayout(advanced_group)
-        
-        layout.addWidget(advanced_group)
+        # Advanced options - REMOVED (empty section)
+        # advanced_group = QGroupBox("Advanced Options")
+        # advanced_layout = QFormLayout(advanced_group)
+        # layout.addWidget(advanced_group)
         
         # File content preview
         preview_group = QGroupBox("File Content Preview")

@@ -186,12 +186,8 @@ class TargetTab(BaseTab):
                 'type': 'text',
                 'label': 'HTTP Proxy',
                 'placeholder': 'http://127.0.0.1:8080'
-            },
-            {
-                'name': 'tor',
-                'type': 'checkbox',
-                'label': 'Use Tor Anonymity Network'
             }
+            # Removed tor option (moved to Request tab)
         ]
         
         return OptionGroup("Connection Options", connection_options, self.mutual_exclusion_manager)
