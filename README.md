@@ -4,7 +4,7 @@
 [![PyQt6](https://img.shields.io/badge/PyQt6-6.0+-green.svg)](https://pypi.org/project/PyQt6/)
 [![SQLmap](https://img.shields.io/badge/SQLmap-Latest-red.svg)](https://sqlmap.org/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Documentation](https://img.shields.io/badge/Documentation-GitHub%20Pages-blue.svg)](https://nanragav.github.io/SQLmap-GUI-Advanced-SQL-Injection-Testing-Interface/)
+[![Documentation](https://img.shields.io/badge/Documentation-GitHub%20Pages-blue.svg)](https://nanragav.github.io/SQLmap-GUI/)
 
 A comprehensive, user-friendly graphical interface for SQLmap - the world's most powerful SQL injection testing tool. Built with Python and PyQt6 for professional penetration testers and security researchers.
 
@@ -73,7 +73,7 @@ sudo pacman -S python python-pip git
 
 ```bash
 # Clone the repository
-git clone https://github.com/nanragav/sqlmap-gui.git
+git clone https://github.com/nanragav/SQLmap-GUI.git
 cd sqlmap-gui
 
 # Create virtual environment
@@ -112,7 +112,7 @@ chmod +x run_gui.sh
 
 ```cmd
 # Open Command Prompt or PowerShell
-git clone https://github.com/nanragav/sqlmap-gui.git
+git clone https://github.com/nanragav/SQLmap-GUI.git
 cd sqlmap-gui
 
 # Create virtual environment
@@ -287,7 +287,7 @@ pause
 
 Comprehensive documentation is available at our GitHub Pages site:
 
-🔗 **[SQLmap GUI Documentation](https://nanragav.github.io/SQLmap-GUI-Advanced-SQL-Injection-Testing-Interface/)**
+🔗 **[SQLmap GUI Documentation](https://nanragav.github.io/SQLmap-GUI/)**
 
 The documentation includes:
 
@@ -308,10 +308,10 @@ The documentation includes:
 
 ### Getting Started with Documentation
 
-1. Visit the [documentation site](https://nanragav.github.io/SQLmap-GUI-Advanced-SQL-Injection-Testing-Interface/)
-2. Start with the [Quick Start Guide](https://nanragav.github.io/SQLmap-GUI-Advanced-SQL-Injection-Testing-Interface/quick_start.html)
-3. Explore the [User Manual](https://nanragav.github.io/SQLmap-GUI-Advanced-SQL-Injection-Testing-Interface/user_manual.html)
-4. Check out [Practical Examples](https://nanragav.github.io/SQLmap-GUI-Advanced-SQL-Injection-Testing-Interface/examples/)
+1. Visit the [documentation site](https://nanragav.github.io/SQLmap-GUI/)
+2. Start with the [Quick Start Guide](https://nanragav.github.io/SQLmap-GUI/quick_start.html)
+3. Explore the [User Manual](https://nanragav.github.io/SQLmap-GUI/user_manual.html)
+4. Check out [Practical Examples](https://nanragav.github.io/SQLmap-GUI/examples/)
 
 ## 🏗️ Project Structure
 
@@ -408,7 +408,7 @@ python src\main.py
 
 ### Getting Help
 
-- Check the [Issues](https://github.com/nanragav/sqlmap-gui/issues) page
+- Check the [Issues](https://github.com/nanragav/SQLmap-GUI/issues) page
 - Review the [SQLmap documentation](https://sqlmap.org/)
 - Join security communities for SQL injection discussions
 
@@ -417,7 +417,7 @@ python src\main.py
 We welcome contributions! Here's how to get started:
 
 1. **Fork** the repository
-2. **Clone** your fork: `git clone https://github.com/nanragav/sqlmap-gui.git`
+2. **Clone** your fork: `git clone https://github.com/nanragav/SQLmap-GUI.git`
 3. **Create** a feature branch: `git checkout -b feature-name`
 4. **Make** your changes following the existing code style
 5. **Test** thoroughly on both Linux and Windows
@@ -476,12 +476,12 @@ This tool is designed for **educational and authorized security testing purposes
 ## 📞 Support
 
 ### Documentation
-- **Online Documentation**: [GitHub Pages](https://nanragav.github.io/SQLmap-GUI-Advanced-SQL-Injection-Testing-Interface/)
+- **Online Documentation**: [GitHub Pages](https://nanragav.github.io/SQLmap-GUI/)
 - **Technical Details**: See [SQLmap_GUI_Plan.md](SQLmap_GUI_Plan.md) for technical details
 
 ### Contact Information
 - **Email**: [sriragavendrabharath@outlook.com](mailto:sriragavendrabharath@outlook.com)
-- **GitHub Issues**: [Report bugs and request features](https://github.com/nanragav/sqlmap-gui/issues)
+- **GitHub Issues**: [Report bugs and request features](https://github.com/nanragav/SQLmap-GUI/issues)
 - **GitHub Discussions**: Join community discussions
 
 ### Community Support
