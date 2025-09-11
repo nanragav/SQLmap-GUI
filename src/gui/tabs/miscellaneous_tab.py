@@ -37,21 +37,15 @@ class MiscellaneousTab(BaseTab):
         
         layout.addWidget(waf_group)
         
-        # Page analysis options - REMOVED text_only and titles (duplicates in Detection tab)
-        page_group = QGroupBox("Page Analysis")
-        page_layout = QFormLayout(page_group)
-        
-        # REMOVED: text_only and titles checkboxes (duplicates)
-        
-        layout.addWidget(page_group)
+        # Removed empty Page Analysis group
         
         # Traffic options
         traffic_group = QGroupBox("Traffic Control")
         traffic_layout = QFormLayout(traffic_group)
         
-        self.purge = QCheckBox("Safely remove all content from output directory")
-        self.purge.setToolTip("Safely remove all content from output directory (--purge)")
-        traffic_layout.addRow("", self.purge)
+        self.flush_session = QCheckBox("Flush session files for current target")
+        self.flush_session.setToolTip("Flush session files for current target (--flush-session)")
+        traffic_layout.addRow("", self.flush_session)
         
         self.skip_heuristics = QCheckBox("Skip heuristic detection of SQLi vulnerabilities")
         self.skip_heuristics.setToolTip("Skip heuristic detection of SQLi vulnerabilities (--skip-heuristics)")
@@ -59,11 +53,7 @@ class MiscellaneousTab(BaseTab):
         
         layout.addWidget(traffic_group)
         
-        # Advanced parsing
-        parsing_group = QGroupBox("Advanced Parsing")
-        parsing_layout = QFormLayout(parsing_group)
-        
-        layout.addWidget(parsing_group)
+        # Removed empty Advanced Parsing group
         
         # System interaction
         system_group = QGroupBox("System Interaction")
@@ -105,11 +95,8 @@ class MiscellaneousTab(BaseTab):
     
     def connect_signals(self):
         """Connect widget signals"""
-
-
         self.skip_waf.toggled.connect(self.options_changed)
-
-        self.purge.toggled.connect(self.options_changed)
+        self.flush_session.toggled.connect(self.options_changed)
         self.skip_heuristics.toggled.connect(self.options_changed)
         self.alert.textChanged.connect(self.options_changed)
         self.beep.toggled.connect(self.options_changed)
@@ -121,15 +108,11 @@ class MiscellaneousTab(BaseTab):
         """Get miscellaneous options"""
         options = {}
         
-
-        
-
-        
         if self.skip_waf.isChecked():
             options['skip_waf'] = True
         
-        if self.purge.isChecked():
-            options['purge'] = True
+        if self.flush_session.isChecked():
+            options['flush_session'] = True
         
         if self.skip_heuristics.isChecked():
             options['skip_heuristics'] = True
@@ -153,11 +136,8 @@ class MiscellaneousTab(BaseTab):
     
     def set_options(self, options):
         """Set miscellaneous options"""
-
-
         self.skip_waf.setChecked(options.get('skip_waf', False))
-
-        self.purge.setChecked(options.get('purge', False))
+        self.flush_session.setChecked(options.get('flush_session', False))
         self.skip_heuristics.setChecked(options.get('skip_heuristics', False))
         self.alert.setText(options.get('alert', ''))
         self.beep.setChecked(options.get('beep', False))
@@ -167,11 +147,8 @@ class MiscellaneousTab(BaseTab):
     
     def reset_options(self):
         """Reset miscellaneous options to defaults"""
-
-
         self.skip_waf.setChecked(False)
-
-        self.purge.setChecked(False)
+        self.flush_session.setChecked(False)
         self.skip_heuristics.setChecked(False)
         self.alert.clear()
         self.beep.setChecked(False)

@@ -47,6 +47,10 @@ class RequestTab(QWidget):
         ssl_group = self.create_ssl_group()
         layout.addWidget(ssl_group)
         
+        # Tor options group
+        tor_group = self.create_tor_group()
+        layout.addWidget(tor_group)
+        
         layout.addStretch()
         scroll_content.setLayout(layout)
         scroll_area.setWidget(scroll_content)
@@ -55,6 +59,9 @@ class RequestTab(QWidget):
         tab_layout = QVBoxLayout()
         tab_layout.addWidget(scroll_area)
         self.setLayout(tab_layout)
+        
+        # Connect tor checkbox signal
+        self.connect_tor_signals()
     
     def create_optimization_group(self) -> QGroupBox:
         """Create HTTP optimization options"""
@@ -86,10 +93,18 @@ class RequestTab(QWidget):
                 'name': 'batch',
                 'type': 'checkbox',
                 'label': 'Never Ask for User Input (Use Default Behavior)'
+            },
+            {
+                'name': 'tor',
+                'type': 'checkbox',
+                'label': 'Use Tor Anonymizer'
             }
         ]
         
-        return OptionGroup("Optimization", optimization_options, self.mutual_exclusion_manager)
+        group = OptionGroup("Optimization", optimization_options, self.mutual_exclusion_manager)
+        # Store reference to the group for tor checkbox access
+        self.optimization_group = group
+        return group
     
     def create_timing_group(self) -> QGroupBox:
         """Create timing and delay options"""
@@ -152,6 +167,17 @@ class RequestTab(QWidget):
                     {'label': 'Windows-1252', 'value': 'windows-1252'},
                     {'label': 'ASCII', 'value': 'ascii'}
                 ]
+            },
+            {
+                'name': 'base64',
+                'type': 'text',
+                'label': 'Parameter(s) Containing Base64 Encoded Data',
+                'placeholder': 'param1,param2'
+            },
+            {
+                'name': 'base64_safe',
+                'type': 'checkbox',
+                'label': 'Use URL and Filename Safe Base64 Alphabet (RFC 4648)'
             }
         ]
         
@@ -164,10 +190,43 @@ class RequestTab(QWidget):
                 'name': 'force_ssl',
                 'type': 'checkbox',
                 'label': 'Force Usage of SSL/HTTPS'
+            },
+            {
+                'name': 'cors',
+                'type': 'checkbox',
+                'label': 'Add CORS Headers to Requests'
             }
         ]
         
         return OptionGroup("Advanced Request Options", ssl_options, self.mutual_exclusion_manager)
+    
+    def create_tor_group(self) -> QGroupBox:
+        """Create Tor options"""
+        tor_options = [
+            {
+                'name': 'tor_port',
+                'type': 'number',
+                'label': 'Tor Proxy Port',
+                'min': 1,
+                'max': 65535,
+                'default': 9050
+            },
+            {
+                'name': 'tor_type',
+                'type': 'combo',
+                'label': 'Tor Proxy Type',
+                'items': [
+                    {'label': 'SOCKS4', 'value': 'SOCKS4'},
+                    {'label': 'SOCKS5', 'value': 'SOCKS5'},
+                    {'label': 'HTTP', 'value': 'HTTP'}
+                ]
+            }
+        ]
+        
+        group = OptionGroup("Tor Options", tor_options, self.mutual_exclusion_manager)
+        # Store reference to the group for conditional visibility
+        self.tor_group = group
+        return group
     
     def get_options(self) -> Dict[str, Any]:
         """Get all options from this tab"""
@@ -179,6 +238,11 @@ class RequestTab(QWidget):
             if item and item.widget() and isinstance(item.widget(), OptionGroup):
                 group_options = item.widget().get_values()
                 options.update(group_options)
+        
+        # Only include tor_port and tor_type if tor is enabled
+        if not options.get('tor', False):
+            options.pop('tor_port', None)
+            options.pop('tor_type', None)
         
         # Filter out empty values
         return {k: v for k, v in options.items() if v is not None and v != ''}
@@ -197,25 +261,17 @@ class RequestTab(QWidget):
             if item and item.widget() and isinstance(item.widget(), OptionGroup):
                 item.widget().set_values({})
     
-    def validate_options(self) -> Dict[str, Any]:
-        """Validate current options"""
-        options = self.get_options()
-        errors = []
-        
-        # Validate threading
-        threads = options.get('threads', 1)
-        if threads > 1:
-            errors.append("Warning: Using multiple threads may cause instability")
-        
-        # Validate delay
-        delay = options.get('delay', 0)
-        if delay > 0:
-            timeout = options.get('timeout', 30)
-            if delay > timeout:
-                errors.append("Delay should not exceed timeout value")
-        
-        return {
-            'valid': len(errors) == 0,
-            'errors': errors,
-            'options': options
-        }
+    def connect_tor_signals(self):
+        """Connect tor checkbox signal to show/hide tor options"""
+        # Find the tor checkbox in the optimization group
+        if hasattr(self, 'optimization_group') and hasattr(self.optimization_group, 'widgets'):
+            tor_checkbox = self.optimization_group.widgets.get('tor')
+            if tor_checkbox and isinstance(tor_checkbox, QCheckBox):
+                tor_checkbox.toggled.connect(self.on_tor_toggled)
+                # Set initial state
+                self.on_tor_toggled(tor_checkbox.isChecked())
+    
+    def on_tor_toggled(self, checked):
+        """Handle tor checkbox state change"""
+        if hasattr(self, 'tor_group'):
+            self.tor_group.setVisible(checked)

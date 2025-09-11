@@ -122,31 +122,8 @@ class DetectionTab(QWidget):
     def create_advanced_group(self) -> QGroupBox:
         """Create advanced detection options"""
         advanced_options = [
-            {
-                'name': 'invalid_bignum',
-                'type': 'checkbox',
-                'label': 'Use Big Numbers for Invalidating Values'
-            },
-            {
-                'name': 'invalid_logical',
-                'type': 'checkbox',
-                'label': 'Use Logical Operations for Invalidating Values'
-            },
-            {
-                'name': 'invalid_string',
-                'type': 'checkbox',
-                'label': 'Use Random Strings for Invalidating Values'
-            },
-            {
-                'name': 'no_cast',
-                'type': 'checkbox',
-                'label': 'Turn Off Payload Casting Mechanism'
-            },
-            {
-                'name': 'no_escape',
-                'type': 'checkbox',
-                'label': 'Turn Off String Escaping Mechanism'
-            },
+            # Removed duplicate invalidation options (already exist in Injection tab)
+            # invalid_bignum, invalid_logical, invalid_string, no_cast, no_escape
             {
                 'name': 'union_cols',
                 'type': 'text',

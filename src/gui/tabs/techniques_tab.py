@@ -34,10 +34,6 @@ class TechniquesTab(QWidget):
         technique_group = self.create_technique_group()
         layout.addWidget(technique_group)
         
-        # Boolean-based options
-        boolean_group = self.create_boolean_group()
-        layout.addWidget(boolean_group)
-        
         # Time-based options
         time_group = self.create_time_group()
         layout.addWidget(time_group)
@@ -46,13 +42,7 @@ class TechniquesTab(QWidget):
         union_group = self.create_union_group()
         layout.addWidget(union_group)
         
-        # Error-based options
-        error_group = self.create_error_group()
-        layout.addWidget(error_group)
-        
-        # Out-of-Band options
-        oob_group = self.create_oob_group()
-        layout.addWidget(oob_group)
+        # Removed empty groups: boolean, error, oob
         
         layout.addStretch()
         scroll_content.setLayout(layout)
@@ -105,25 +95,6 @@ class TechniquesTab(QWidget):
         
         return OptionGroup("Injection Techniques", technique_options, self.mutual_exclusion_manager)
     
-    def create_boolean_group(self) -> QGroupBox:
-        """Create Boolean-based blind injection options"""
-        boolean_options = [
-            {
-                'name': 'bool_true',
-                'type': 'text',
-                'label': 'True Statement for Boolean Injection',
-                'placeholder': '1=1'
-            },
-            {
-                'name': 'bool_false',
-                'type': 'text',
-                'label': 'False Statement for Boolean Injection',
-                'placeholder': '1=2'
-            }
-        ]
-        
-        return OptionGroup("Boolean-based Blind", boolean_options, self.mutual_exclusion_manager)
-    
     def create_time_group(self) -> QGroupBox:
         """Create Time-based blind injection options"""
         time_options = [
@@ -141,25 +112,9 @@ class TechniquesTab(QWidget):
     
     def create_union_group(self) -> QGroupBox:
         """Create UNION-based injection options"""
+        # Removed duplicate union options (already exist in Detection tab)
+        # union_cols, union_char, union_from
         union_options = [
-            {
-                'name': 'union_cols',
-                'type': 'text',
-                'label': 'Range of Columns to Test for UNION',
-                'placeholder': '1-20'
-            },
-            {
-                'name': 'union_char',
-                'type': 'text',
-                'label': 'Character for Bruteforcing Column Number',
-                'placeholder': 'NULL'
-            },
-            {
-                'name': 'union_from',
-                'type': 'text',
-                'label': 'Table to Use in FROM Part of UNION',
-                'placeholder': 'information_schema.tables'
-            },
             {
                 'name': 'union_values',
                 'type': 'text',
@@ -170,51 +125,7 @@ class TechniquesTab(QWidget):
         
         return OptionGroup("UNION Query-based", union_options, self.mutual_exclusion_manager)
     
-    def create_error_group(self) -> QGroupBox:
-        """Create Error-based injection options"""
-        error_options = [
-            {
-                'name': 'error_dbms',
-                'type': 'combo',
-                'label': 'Target DBMS for Error-based',
-                'items': [
-                    {'label': 'Auto-detect', 'value': ''},
-                    {'label': 'MySQL', 'value': 'mysql'},
-                    {'label': 'PostgreSQL', 'value': 'postgresql'},
-                    {'label': 'MSSQL', 'value': 'mssql'},
-                    {'label': 'Oracle', 'value': 'oracle'}
-                ]
-            }
-        ]
-        
-        return OptionGroup("Error-based", error_options, self.mutual_exclusion_manager)
-    
-    def create_oob_group(self) -> QGroupBox:
-        """Create Out-of-Band attack options"""
-        oob_options = [
-            {
-                'name': 'dns_domain',
-                'type': 'text',
-                'label': 'DNS Domain for OOB Attacks',
-                'placeholder': 'subdomain.yourdomain.com',
-                'tooltip': 'Domain name for DNS exfiltration and OOB attacks (--dns-domain)'
-            },
-            {
-                'name': 'second_url',
-                'type': 'text',
-                'label': 'Second-order URL',
-                'placeholder': 'http://example.com/page2.php',
-                'tooltip': 'URL to test for second-order SQL injection (--second-url)'
-            },
-            {
-                'name': 'second_req',
-                'type': 'file',
-                'label': 'Second-order Request File',
-                'tooltip': 'Load second-order HTTP request from file (--second-req)'
-            }
-        ]
-        
-        return OptionGroup("Out-of-Band Attacks", oob_options, self.mutual_exclusion_manager)
+    # Removed create_boolean_group, create_error_group, create_oob_group methods
     
     def get_options(self) -> Dict[str, Any]:
         """Get all options from this tab"""

@@ -23,8 +23,6 @@ class HiddenSwitchesTab(BaseTab):
     def init_ui(self):
         layout = QVBoxLayout(self)
         
-
-        
         # HTTP parameter pollution
         hpp_group = QGroupBox("HTTP Parameter Pollution")
         hpp_layout = QFormLayout(hpp_group)
@@ -43,40 +41,17 @@ class HiddenSwitchesTab(BaseTab):
         self.chunked.setToolTip("Use HTTP chunked transfer encoded requests (--chunked)")
         http_advanced_layout.addRow("", self.chunked)
         
-        self.force_ssl = QCheckBox("Force usage of SSL/HTTPS")
-        self.force_ssl.setToolTip("Force usage of SSL/HTTPS (--force-ssl)")
-        http_advanced_layout.addRow("", self.force_ssl)
-        
-        self.cors = QCheckBox("Add CORS headers to requests")
-        self.cors.setToolTip("Add CORS headers to requests (--cors)")
-        http_advanced_layout.addRow("", self.cors)
+        # Removed force_ssl and cors (moved to Request tab)
         
         layout.addWidget(http_advanced_group)
         
-        # Web root options
-        web_group = QGroupBox("Web Options")
-        web_layout = QFormLayout(web_group)
-        
-        self.web_root = QLineEdit()
-        self.web_root.setPlaceholderText("Web server document root directory")
-        self.web_root.setToolTip("Web server document root directory (--web-root)")
-        web_layout.addRow("Web root:", self.web_root)
-        
-        self.scope = QLineEdit()
-        self.scope.setPlaceholderText("Regexp to filter targets from provided proxy log")
-        self.scope.setToolTip("Regexp to filter targets from provided proxy log (--scope)")
-        web_layout.addRow("Scope filter:", self.scope)
-        
-        layout.addWidget(web_group)
+        # Removed Web Options group and scope filter
         
         # Testing options
         testing_group = QGroupBox("Advanced Testing")
         testing_layout = QFormLayout(testing_group)
         
-        self.test_parameter = QLineEdit()
-        self.test_parameter.setPlaceholderText("Testable parameter(s)")
-        self.test_parameter.setToolTip("Testable parameter(s) (--test-parameter)")
-        testing_layout.addRow("Test parameter:", self.test_parameter)
+        # Removed test_parameter
         
         self.unstable = QCheckBox("Adjust delays in unstable connections")
         self.unstable.setToolTip("Adjust delays in unstable connections (--unstable)")
@@ -84,15 +59,7 @@ class HiddenSwitchesTab(BaseTab):
         
         layout.addWidget(testing_group)
         
-        # Development/Debug options
-        debug_group = QGroupBox("Development/Debug")
-        debug_layout = QFormLayout(debug_group)
-        
-        self.profile = QCheckBox("Turn on profiler")
-        self.profile.setToolTip("Turn on profiler (--profile)")
-        debug_layout.addRow("", self.profile)
-        
-        layout.addWidget(debug_group)
+        # Removed Development/Debug group and profile option
         
         # Information section
         info_group = QGroupBox("Information")
@@ -119,28 +86,17 @@ class HiddenSwitchesTab(BaseTab):
     
     def connect_signals(self):
         """Connect widget signals"""
-
-
-
         self.hpp.toggled.connect(self.options_changed)
         self.chunked.toggled.connect(self.options_changed)
-        self.force_ssl.toggled.connect(self.options_changed)
-        self.cors.toggled.connect(self.options_changed)
-        self.web_root.textChanged.connect(self.options_changed)
-        self.scope.textChanged.connect(self.options_changed)
-        self.test_parameter.textChanged.connect(self.options_changed)
+        # Removed force_ssl and cors signal connections (moved to Request tab)
+        # Removed scope signal connection
+        # Removed test_parameter signal connection
         self.unstable.toggled.connect(self.options_changed)
-        self.profile.toggled.connect(self.options_changed)
+        # Removed profile signal connection
     
     def get_options(self):
         """Get advanced/hidden options"""
         options = {}
-        
-
-        
-
-        
-
         
         if self.hpp.isChecked():
             options['hpp'] = True
@@ -148,52 +104,35 @@ class HiddenSwitchesTab(BaseTab):
         if self.chunked.isChecked():
             options['chunked'] = True
         
-        if self.force_ssl.isChecked():
-            options['force_ssl'] = True
+        # Removed force_ssl and cors (moved to Request tab)
         
-        if self.cors.isChecked():
-            options['cors'] = True
+        # Removed scope
         
-        if self.web_root.text().strip():
-            options['web_root'] = self.web_root.text().strip()
-        
-        if self.scope.text().strip():
-            options['scope'] = self.scope.text().strip()
+        # Removed test_parameter
         
         if self.unstable.isChecked():
             options['unstable'] = True
         
-        if self.profile.isChecked():
-            options['profile'] = True
+        # Removed profile
         
         return options
     
     def set_options(self, options):
         """Set advanced/hidden options"""
-
-
-
         self.hpp.setChecked(options.get('hpp', False))
         self.chunked.setChecked(options.get('chunked', False))
-        self.force_ssl.setChecked(options.get('force_ssl', False))
-        self.cors.setChecked(options.get('cors', False))
-        self.web_root.setText(options.get('web_root', ''))
-        self.scope.setText(options.get('scope', ''))
-        self.test_parameter.setText(options.get('test_parameter', ''))
+        # Removed force_ssl and cors (moved to Request tab)
+        # Removed scope
+        # Removed test_parameter
         self.unstable.setChecked(options.get('unstable', False))
-        self.profile.setChecked(options.get('profile', False))
+        # Removed profile
     
     def reset_options(self):
         """Reset advanced/hidden options to defaults"""
-
-
-
         self.hpp.setChecked(False)
         self.chunked.setChecked(False)
-        self.force_ssl.setChecked(False)
-        self.cors.setChecked(False)
-        self.web_root.clear()
-        self.scope.clear()
-        self.test_parameter.clear()
+        # Removed force_ssl and cors (moved to Request tab)
+        # Removed scope
+        # Removed test_parameter
         self.unstable.setChecked(False)
-        self.profile.setChecked(False)
+        # Removed profile
