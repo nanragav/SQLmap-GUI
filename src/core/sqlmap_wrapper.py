@@ -77,25 +77,24 @@ class SqlmapProcess:
         """Start the SQLmap process"""
         try:
             self.start_time = time.time()
+            # Use environment similar to manual execution
+            env = os.environ.copy()
+            
             self.process = subprocess.Popen(
                 self.command,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 stdin=subprocess.PIPE,
                 text=True,
-                bufsize=1,
-                universal_newlines=True
+                env=env,
+                cwd=os.getcwd()  # Use current working directory
             )
             
             self.is_running = True
             
-            # Send sudo password if needed
+            # Handle sudo password if needed
             if self.sudo_password and self.command[0] == 'sudo':
-                try:
-                    self.process.stdin.write(self.sudo_password + '\n')
-                    self.process.stdin.flush()
-                except Exception as e:
-                    print(f"Error sending sudo password: {e}")
+                self._handle_sudo_password()
             
             # Start output monitoring threads
             threading.Thread(target=self._monitor_output, daemon=True).start()
@@ -105,6 +104,52 @@ class SqlmapProcess:
         except Exception as e:
             print(f"Error starting SQLmap process: {e}")
             return False
+    
+    def _handle_sudo_password(self):
+        """Handle sudo password input with proper timing and error handling"""
+        def send_password():
+            try:
+                # Wait for sudo to be ready for password input
+                time.sleep(1)
+                
+                # Check if process is still running
+                if self.process.poll() is not None:
+                    print(f"Sudo process terminated early with code: {self.process.returncode}")
+                    return False
+                
+                # Send password with newline
+                try:
+                    self.process.stdin.write(self.sudo_password + '\n')
+                    self.process.stdin.flush()
+                    print("Sudo password sent successfully")
+                except BrokenPipeError:
+                    # This is expected - sudo closes stdin after authentication
+                    print("Sudo password sent (stdin closed as expected)")
+                
+                # Wait a moment for authentication
+                time.sleep(1)
+                
+                # Check if sudo accepted the password by looking for process status
+                if self.process.poll() is None:
+                    # Process still running, likely authentication successful
+                    return True
+                else:
+                    # Process terminated, check exit code
+                    return_code = self.process.returncode
+                    if return_code == 0:
+                        print("Sudo authentication successful")
+                        return True
+                    else:
+                        print(f"Sudo authentication failed with return code: {return_code}")
+                        return False
+                        
+            except Exception as e:
+                print(f"Error sending sudo password: {e}")
+                return False
+        
+        # Send password in a separate thread to avoid blocking
+        password_thread = threading.Thread(target=send_password, daemon=True)
+        password_thread.start()
     
     def stop(self) -> bool:
         """Stop the SQLmap process"""
@@ -226,6 +271,12 @@ class SqlmapProcess:
         
         return status
     
+    def get_exit_code(self) -> Optional[int]:
+        """Get the process exit code"""
+        if self.process:
+            return self.process.returncode
+        return None
+    
     def read_output(self) -> Optional[str]:
         """Read available output from the process"""
         try:
@@ -249,7 +300,65 @@ class SqlmapWrapper:
     
     def __init__(self, sqlmap_path: str = "sqlmap"):
         self.sqlmap_path = sqlmap_path
+        self._check_sqlmap_availability()
         self._load_all_parameters()
+        self._load_target_params()
+        self._load_mutual_exclusions()
+        self._load_high_risk_params()
+        self._check_python_availability()
+    
+    def _check_python_availability(self):
+        """Check Python availability and set the correct interpreter"""
+        # Check for python3 first, then python
+        self.python_cmd = None
+        
+        for cmd in ['python3', 'python']:
+            try:
+                result = subprocess.run([cmd, '--version'], capture_output=True, text=True, timeout=5)
+                if result.returncode == 0:
+                    self.python_cmd = cmd
+                    print(f"Found Python interpreter: {cmd} - {result.stdout.strip()}")
+                    break
+            except (FileNotFoundError, subprocess.TimeoutExpired):
+                continue
+        
+        if not self.python_cmd:
+            print("Warning: No Python interpreter found!")
+    
+    def _check_sqlmap_availability(self):
+        """Check if sqlmap is available and get its version"""
+        try:
+            # Try running sqlmap directly first
+            result = subprocess.run([self.sqlmap_path, '--version'], 
+                                  capture_output=True, text=True, timeout=10)
+            
+            if result.returncode == 0:
+                print(f"SQLmap found: {result.stdout.strip()}")
+                return
+            
+            # If direct execution fails, try with python interpreter
+            if self.python_cmd and hasattr(self, 'python_cmd'):
+                result = subprocess.run([self.python_cmd, self.sqlmap_path, '--version'], 
+                                      capture_output=True, text=True, timeout=10)
+                if result.returncode == 0:
+                    print(f"SQLmap found (via {self.python_cmd}): {result.stdout.strip()}")
+                    # Use python interpreter to run sqlmap
+                    self.sqlmap_path = [self.python_cmd, self.sqlmap_path]
+                else:
+                    print(f"Warning: SQLmap returned non-zero exit code: {result.returncode}")
+                    if result.stderr:
+                        print(f"SQLmap stderr: {result.stderr.strip()}")
+            else:
+                print(f"Warning: SQLmap not found at path: {self.sqlmap_path}")
+                print("Make sure SQLmap is installed and in your PATH")
+                
+        except FileNotFoundError:
+            print(f"Warning: SQLmap not found at path: {self.sqlmap_path}")
+            print("Make sure SQLmap is installed and in your PATH")
+        except subprocess.TimeoutExpired:
+            print("Warning: SQLmap --version command timed out")
+        except Exception as e:
+            print(f"Warning: Error checking SQLmap availability: {e}")
     
     def _load_all_parameters(self):
         """Load ALL SQLmap parameters with proper mappings"""
@@ -432,11 +541,78 @@ class SqlmapWrapper:
             'inline_queries': {'flag': '--technique', 'type': 'technique', 'value': 'Q'}
         }
     
+    def _load_target_params(self):
+        """Load target parameter definitions"""
+        self.target_params = {
+            'url': {'flag': '-u', 'type': 'quoted_arg', 'description': 'Target URL'},
+            'direct': {'flag': '-d', 'type': 'quoted_arg', 'description': 'Direct connection string'},
+            'log_file': {'flag': '-l', 'type': 'quoted_arg', 'description': 'Parse targets from Burp/ZAP proxy log'},
+            'bulk_file': {'flag': '-m', 'type': 'quoted_arg', 'description': 'Scan multiple targets from file'},
+            'request_file': {'flag': '-r', 'type': 'quoted_arg', 'description': 'Load HTTP request from file'},
+            'google_dork': {'flag': '-g', 'type': 'quoted_arg', 'description': 'Process Google dork results'}
+        }
+    
+    def _load_mutual_exclusions(self):
+        """Load mutual exclusion groups"""
+        self.mutual_exclusions = {
+            'target_input': ['url', 'direct', 'log_file', 'bulk_file', 'request_file', 'google_dork'],
+            'user_agent_type': ['user_agent', 'random_agent', 'mobile'],
+            'proxy_type': ['proxy', 'tor'],
+            'shell_access': ['sql_shell', 'os_shell', 'os_cmd'],
+            'data_output': ['dump_all', 'sql_query', 'dump'],
+            'crawl_vs_threads': ['crawl', 'threads'],
+            'batch_vs_wizard': ['batch', 'wizard']
+        }
+    
+    def _load_high_risk_params(self):
+        """Load high-risk parameter definitions"""
+        self.high_risk_params = {
+            'os_shell': {
+                'risk_level': 'HIGH RISK',
+                'warning': 'OS shell access can compromise the target system',
+                'flag': '--os-shell'
+            },
+            'os_cmd': {
+                'risk_level': 'HIGH RISK', 
+                'warning': 'OS command execution can compromise the target system',
+                'flag': '--os-cmd'
+            },
+            'os_pwn': {
+                'risk_level': 'HIGH RISK',
+                'warning': 'OS takeover can completely compromise the target system',
+                'flag': '--os-pwn'
+            },
+            'priv_esc': {
+                'risk_level': 'HIGH RISK',
+                'warning': 'Privilege escalation can lead to full system compromise',
+                'flag': '--priv-esc'
+            },
+            'file_write': {
+                'risk_level': 'MEDIUM RISK',
+                'warning': 'File writing can modify target system files',
+                'flag': '--file-write'
+            },
+            'sql_shell': {
+                'risk_level': 'MEDIUM RISK',
+                'warning': 'SQL shell access allows arbitrary database queries',
+                'flag': '--sql-shell'
+            },
+            'dump_all': {
+                'risk_level': 'MEDIUM RISK',
+                'warning': 'Dumping all data can expose sensitive information',
+                'flag': '--dump-all'
+            }
+        }
+    
     def build_command(self, options: Dict[str, Any], force_batch: bool = True) -> List[str]:
         """Build complete SQLmap command with smart parameter handling"""
         import shlex
         
-        cmd = [self.sqlmap_path]
+        # Handle sqlmap_path being a list (when using python interpreter)
+        if isinstance(self.sqlmap_path, list):
+            cmd = self.sqlmap_path.copy()
+        else:
+            cmd = [self.sqlmap_path]
         
         # Handle auto-batch
         if force_batch and not options.get('batch'):
@@ -447,6 +623,12 @@ class SqlmapWrapper:
         # Remove GUI-specific options
         gui_options = {'auto_batch', '_metadata'}
         processed_options = {k: v for k, v in options.items() if k not in gui_options}
+        
+        # Add flags to ensure non-interactive operation
+        if force_batch:
+            processed_options['batch'] = True
+            processed_options['disable_coloring'] = True  # Disable ANSI color codes
+            processed_options['purge'] = False  # Don't purge session files in batch mode
         
         # Track flags already added to avoid duplicates
         flags_added = set()
@@ -506,9 +688,13 @@ class SqlmapWrapper:
                     # Value parameter - add if not empty
                     value_str = str(param_value).strip()
                     if value_str:
-                        # Use shlex.quote for safety
-                        quoted_value = shlex.quote(value_str)
-                        cmd.extend([flag, quoted_value])
+                        # Special handling for URLs and similar parameters - don't quote them
+                        if param_name in ['url', 'direct', 'second_url', 'proxy']:
+                            cmd.extend([flag, value_str])
+                        else:
+                            # Use shlex.quote for other arguments
+                            quoted_value = shlex.quote(value_str)
+                            cmd.extend([flag, quoted_value])
                         flags_added.add(flag)
                         
                 elif param_type == 'special':
@@ -858,7 +1044,12 @@ class SqlmapWrapper:
             
             # Add sudo if required
             if use_sudo:
+                if not self._check_sudo_available():
+                    print("Warning: sudo not available on this system")
+                    return None
+                
                 command = ['sudo', '-S'] + command
+                print(f"Using sudo command: {' '.join(command)}")
             
             # Create process
             process = SqlmapProcess(command, sudo_password if use_sudo else None)
@@ -868,6 +1059,14 @@ class SqlmapWrapper:
         except Exception as e:
             print(f"Error creating SqlmapProcess: {e}")
             return None
+    
+    def _check_sudo_available(self) -> bool:
+        """Check if sudo is available on the system"""
+        try:
+            result = subprocess.run(['which', 'sudo'], capture_output=True, text=True)
+            return result.returncode == 0
+        except Exception:
+            return False
 
 def main():
     """Test the new wrapper"""
