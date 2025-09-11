@@ -1,6 +1,6 @@
 # SQLmap GUI - Advanced SQL Injection Testing Interface
 
-[![GitHub Pages](https://img.shields.io/badge/GitHub-Pages-blue)](https://nanragav.github.io/SQLmap-GUI-Advanced-SQL-Injection-Testing-Interface/)
+[![GitHub Pages](https://img.shields.io/badge/GitHub-Pages-blue)](https://nanragav.github.io/SQLmap-GUI/)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue)](https://www.python.org/)
 [![PyQt6](https://img.shields.io/badge/PyQt6-6.6+-green)](https://pypi.org/project/PyQt6/)
 [![SQLmap](https://img.shields.io/badge/SQLmap-1.9.9.1-red)](https://sqlmap.org/)
@@ -40,8 +40,8 @@ A comprehensive graphical user interface for SQLmap - the automatic SQL injectio
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/nanragav/SQLmap-GUI-Advanced-SQL-Injection-Testing-Interface.git
-   cd SQLmap-GUI-Advanced-SQL-Injection-Testing-Interface
+   git clone https://github.com/nanragav/SQLmap-GUI.git
+   cd SQLmap-GUI
    ```
 
 2. **Install dependencies:**
@@ -332,8 +332,8 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 
 1. **Fork and clone:**
    ```bash
-   git clone https://github.com/your-username/SQLmap-GUI-Advanced-SQL-Injection-Testing-Interface.git
-   cd SQLmap-GUI-Advanced-SQL-Injection-Testing-Interface
+   git clone https://github.com/nanragav/SQLmap-GUI.git
+   cd SQLmap-GUI
    ```
 
 2. **Create virtual environment:**
@@ -396,5 +396,5 @@ This tool is for educational and authorized security testing purposes only. User
 
 **Happy SQL Injection Testing! 🔒🛡️**
 
-For questions, issues, or contributions, please visit our [GitHub repository](https://github.com/nanragav/SQLmap-GUI-Advanced-SQL-Injection-Testing-Interface).</content>
+For questions, issues, or contributions, please visit our [GitHub repository](https://github.com/nanragav/SQLmap-GUI).</content>
 <parameter name="filePath">/home/devil/Desktop/SQLmap-GUI-Advanced-SQL-Injection-Testing-Interface/docs/README.md
