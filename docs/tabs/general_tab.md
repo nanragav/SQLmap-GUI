@@ -390,8 +390,8 @@ sqlmap -u "http://example.com/debug.php?id=1" -v 6 --log-file=./debug.log --save
 
 ## 📚 Related Tabs
 
-- **[Target Tab](target.md)**: Target specification and configuration
-- **[Request Tab](request.md)**: HTTP request customization
-- **[Enumeration Tab](enumeration.md)**: Database structure discovery
-- **[Injection Tab](injection.md)**: Parameter selection and payload customization</content>
+- **[Target Tab](target_tab.md)**: Target specification and configuration
+- **[Request Tab](request_tab.md)**: HTTP request customization
+- **[Enumeration Tab](enumeration_tab.md)**: Database structure discovery
+- **[Injection Tab](injection_tab.md)**: Parameter selection and payload customization</content>
 <parameter name="filePath">/home/devil/Desktop/SQLmap-GUI-Advanced-SQL-Injection-Testing-Interface/docs/tabs/general.md

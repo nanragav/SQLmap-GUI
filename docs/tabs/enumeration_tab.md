@@ -385,8 +385,8 @@ sqlmap -u "http://example.com/logs.php?id=1" -D logs -T access_logs --dump --sta
 
 ## 📚 Related Tabs
 
-- **[Fingerprint Tab](fingerprint.md)**: Database type and version identification
-- **[File System Tab](filesystem.md)**: File system access and file operations
-- **[OS Access Tab](os_access.md)**: Operating system command execution
-- **[General Tab](general.md)**: Output and logging options</content>
+- **[Fingerprint Tab](fingerprint_tab.md)**: Database type and version identification
+- **[File System Tab](file_system_tab.md)**: File system access and file operations
+- **[OS Access Tab](os_access_tab.md)**: Operating system command execution
+- **[General Tab](general_tab.md)**: Output and logging options</content>
 <parameter name="filePath">/home/devil/Desktop/SQLmap-GUI-Advanced-SQL-Injection-Testing-Interface/docs/tabs/enumeration.md

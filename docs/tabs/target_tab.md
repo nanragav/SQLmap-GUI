@@ -279,8 +279,8 @@ sqlmap -u "https://secure.example.com/api.php" --method=POST --data="{\"user\":\
 
 ## 📚 Related Tabs
 
-- **[Request Tab](request.md)**: Additional HTTP configuration options
-- **[Detection Tab](detection.md)**: SQL injection detection settings
-- **[Techniques Tab](techniques.md)**: Injection technique selection
-- **[Enumeration Tab](enumeration.md)**: Database enumeration options</content>
+- **[Request Tab](request_tab.md)**: Additional HTTP configuration options
+- **[Detection Tab](detection_tab.md)**: SQL injection detection settings
+- **[Techniques Tab](techniques_tab.md)**: Injection technique selection
+- **[Enumeration Tab](enumeration_tab.md)**: Database enumeration options</content>
 <parameter name="filePath">/home/devil/Desktop/SQLmap-GUI-Advanced-SQL-Injection-Testing-Interface/docs/tabs/target.md
