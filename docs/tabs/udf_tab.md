@@ -310,8 +310,8 @@ sqlmap -u "http://example.com/batch.php?id=1" --udf-exec=sys_exec --udf-args='ps
 
 ## 📚 Related Tabs
 
-- **[OS Access Tab](os_access.md)**: Operating system command execution
-- **[File System Tab](filesystem.md)**: File system operations
-- **[Enumeration Tab](enumeration.md)**: Database structure discovery
-- **[General Tab](general.md)**: Output and logging options</content>
+- **[OS Access Tab](os_access_tab.md)**: Operating system command execution
+- **[File System Tab](file_system_tab.md)**: File system operations
+- **[Enumeration Tab](enumeration_tab.md)**: Database structure discovery
+- **[General Tab](general_tab.md)**: Output and logging options</content>
 <parameter name="filePath">/home/devil/Desktop/SQLmap-GUI-Advanced-SQL-Injection-Testing-Interface/docs/tabs/udf.md

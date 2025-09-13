@@ -305,8 +305,8 @@ sqlmap -u "http://example.com/register.php" -p "username,password,email" --skip-
 
 ## 📚 Related Tabs
 
-- **[Detection Tab](detection.md)**: Detection level and technique configuration
-- **[Techniques Tab](techniques.md)**: Injection technique selection
-- **[Enumeration Tab](enumeration.md)**: Database structure discovery
-- **[Fingerprint Tab](fingerprint.md)**: Database type identification</content>
+- **[Detection Tab](detection_tab.md)**: Detection level and technique configuration
+- **[Techniques Tab](techniques_tab.md)**: Injection technique selection
+- **[Enumeration Tab](enumeration_tab.md)**: Database structure discovery
+- **[Fingerprint Tab](fingerprint_tab.md)**: Database type identification</content>
 <parameter name="filePath">/home/devil/Desktop/SQLmap-GUI-Advanced-SQL-Injection-Testing-Interface/docs/tabs/injection.md

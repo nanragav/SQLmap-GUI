@@ -268,8 +268,8 @@ sqlmap -u "http://example.com/vuln.php?id=1" --encoding=utf-8 --charset=abcdefgh
 
 ## 📚 Related Tabs
 
-- **[Target Tab](target.md)**: Basic target and connection setup
-- **[Detection Tab](detection.md)**: SQL injection detection configuration
-- **[Techniques Tab](techniques.md)**: Injection technique selection
-- **[General Tab](general.md)**: Additional timing and behavior options</content>
+- **[Target Tab](target_tab.md)**: Basic target and connection setup
+- **[Detection Tab](detection_tab.md)**: SQL injection detection configuration
+- **[Techniques Tab](techniques_tab.md)**: Injection technique selection
+- **[General Tab](general_tab.md)**: Additional timing and behavior options</content>
 <parameter name="filePath">/home/devil/Desktop/SQLmap-GUI-Advanced-SQL-Injection-Testing-Interface/docs/tabs/request.md

@@ -397,8 +397,8 @@ sqlmap -u "http://example.com/complex.php?id=1" --tamper=space2comment,base64enc
 
 ## 📚 Related Tabs
 
-- **[Injection Tab](injection.md)**: Parameter selection and payload customization
-- **[Detection Tab](detection.md)**: Detection level and technique configuration
-- **[Request Tab](request.md)**: HTTP request customization
-- **[General Tab](general.md)**: Output and logging options</content>
+- **[Injection Tab](injection_tab.md)**: Parameter selection and payload customization
+- **[Detection Tab](detection_tab.md)**: Detection level and technique configuration
+- **[Request Tab](request_tab.md)**: HTTP request customization
+- **[General Tab](general_tab.md)**: Output and logging options</content>
 <parameter name="filePath">/home/devil/Desktop/SQLmap-GUI-Advanced-SQL-Injection-Testing-Interface/docs/tabs/miscellaneous.md

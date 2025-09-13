@@ -300,8 +300,8 @@ sqlmap -u "http://example.com/search.php?q=test" --level=4 --risk=2 --technique=
 
 ## 📚 Related Tabs
 
-- **[Injection Tab](injection.md)**: Parameter selection and payload customization
-- **[Techniques Tab](techniques.md)**: Advanced technique configuration
-- **[Target Tab](target.md)**: Target specification and configuration
-- **[Request Tab](request.md)**: HTTP request customization</content>
+- **[Injection Tab](injection_tab.md)**: Parameter selection and payload customization
+- **[Techniques Tab](techniques_tab.md)**: Advanced technique configuration
+- **[Target Tab](target_tab.md)**: Target specification and configuration
+- **[Request Tab](request_tab.md)**: HTTP request customization</content>
 <parameter name="filePath">/home/devil/Desktop/SQLmap-GUI-Advanced-SQL-Injection-Testing-Interface/docs/tabs/detection.md

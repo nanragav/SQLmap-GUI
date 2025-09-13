@@ -378,8 +378,8 @@ sqlmap -u "http://example.com/user.php?id=1" --crack --dict=/path/to/custom_dict
 
 ## 📚 Related Tabs
 
-- **[Enumeration Tab](enumeration.md)**: User and password hash discovery
-- **[Fingerprint Tab](fingerprint.md)**: Database type identification for hash format
-- **[General Tab](general.md)**: Output and logging options
-- **[Request Tab](request.md)**: HTTP request customization for authentication</content>
+- **[Enumeration Tab](enumeration_tab.md)**: User and password hash discovery
+- **[Fingerprint Tab](fingerprint_tab.md)**: Database type identification for hash format
+- **[General Tab](general_tab.md)**: Output and logging options
+- **[Request Tab](request_tab.md)**: HTTP request customization for authentication</content>
 <parameter name="filePath">/home/devil/Desktop/SQLmap-GUI-Advanced-SQL-Injection-Testing-Interface/docs/tabs/brute_force.md
