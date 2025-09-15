@@ -310,8 +310,8 @@ sqlmap -u "http://example.com/test.php?id=1" --fingerprint --banner --current-us
 
 ## 📚 Related Tabs
 
-- **[Detection Tab](detection.md)**: Detection level and technique configuration
-- **[Enumeration Tab](enumeration.md)**: Database structure discovery
-- **[Injection Tab](injection.md)**: Parameter selection and payload customization
-- **[General Tab](general.md)**: Output formatting and logging options</content>
+- **[Detection Tab](detection_tab.md)**: Detection level and technique configuration
+- **[Enumeration Tab](enumeration_tab.md)**: Database structure discovery
+- **[Injection Tab](injection_tab.md)**: Parameter selection and payload customization
+- **[General Tab](general_tab.md)**: Output formatting and logging options</content>
 <parameter name="filePath">/home/devil/Desktop/SQLmap-GUI-Advanced-SQL-Injection-Testing-Interface/docs/tabs/fingerprint.md

@@ -322,8 +322,8 @@ sqlmap -u "http://example.com/files.php?id=1" --os-cmd="find /var/www -name \"*.
 
 ## 📚 Related Tabs
 
-- **[File System Tab](filesystem.md)**: File system access and manipulation
-- **[UDF Tab](udf.md)**: User-defined function creation
-- **[Windows Registry Tab](windows_registry.md)**: Windows registry access
-- **[General Tab](general.md)**: Output and logging options</content>
+- **[File System Tab](file_system_tab.md)**: File system access and manipulation
+- **[UDF Tab](udf_tab.md)**: User-defined function creation
+- **[Windows Registry Tab](windows_registry_tab.md)**: Windows registry access
+- **[General Tab](general_tab.md)**: Output and logging options</content>
 <parameter name="filePath">/home/devil/Desktop/SQLmap-GUI-Advanced-SQL-Injection-Testing-Interface/docs/tabs/os_access.md

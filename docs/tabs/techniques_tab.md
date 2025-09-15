@@ -386,8 +386,8 @@ sqlmap -u "http://example.com/admin.php?id=1" --force-stacked --level=4 --risk=3
 
 ## 📚 Related Tabs
 
-- **[Detection Tab](detection.md)**: Basic detection level and technique selection
-- **[Injection Tab](injection.md)**: Parameter selection and payload customization
-- **[Enumeration Tab](enumeration.md)**: Database structure discovery techniques
-- **[Fingerprint Tab](fingerprint.md)**: Database type identification</content>
+- **[Detection Tab](detection_tab.md)**: Basic detection level and technique selection
+- **[Injection Tab](injection_tab.md)**: Parameter selection and payload customization
+- **[Enumeration Tab](enumeration_tab.md)**: Database structure discovery techniques
+- **[Fingerprint Tab](fingerprint_tab.md)**: Database type identification</content>
 <parameter name="filePath">/home/devil/Desktop/SQLmap-GUI-Advanced-SQL-Injection-Testing-Interface/docs/tabs/techniques.md

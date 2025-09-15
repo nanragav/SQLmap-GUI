@@ -320,8 +320,8 @@ sqlmap -u "http://example.com/recon.php?id=1" --file-check=/root/.ssh/id_rsa --f
 
 ## 📚 Related Tabs
 
-- **[OS Access Tab](os_access.md)**: Operating system command execution
-- **[UDF Tab](udf.md)**: User-defined function creation and execution
-- **[Enumeration Tab](enumeration.md)**: Database structure discovery
-- **[General Tab](general.md)**: Output and logging options</content>
+- **[OS Access Tab](os_access_tab.md)**: Operating system command execution
+- **[UDF Tab](udf_tab.md)**: User-defined function creation and execution
+- **[Enumeration Tab](enumeration_tab.md)**: Database structure discovery
+- **[General Tab](general_tab.md)**: Output and logging options</content>
 <parameter name="filePath">/home/devil/Desktop/SQLmap-GUI-Advanced-SQL-Injection-Testing-Interface/docs/tabs/file_system.md

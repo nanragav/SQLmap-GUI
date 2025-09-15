@@ -535,8 +535,8 @@ sqlmap -u "http://example.com/advanced.php?id=1" --skip-parameter-check --ignore
 
 ## 📚 Related Tabs
 
-- **[Miscellaneous Tab](miscellaneous.md)**: Additional advanced options
-- **[Request Tab](request.md)**: HTTP request customization
-- **[Injection Tab](injection.md)**: Parameter selection and payload customization
-- **[General Tab](general.md)**: Output and logging options</content>
+- **[Miscellaneous Tab](miscellaneous_tab.md)**: Additional advanced options
+- **[Request Tab](request_tab.md)**: HTTP request customization
+- **[Injection Tab](injection_tab.md)**: Parameter selection and payload customization
+- **[General Tab](general_tab.md)**: Output and logging options</content>
 <parameter name="filePath">/home/devil/Desktop/SQLmap-GUI-Advanced-SQL-Injection-Testing-Interface/docs/tabs/hidden_switches.md
