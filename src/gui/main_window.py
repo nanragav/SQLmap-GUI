@@ -888,7 +888,13 @@ class SqlmapMainWindow(QMainWindow):
                         error_tabs.append(f"{tab_name}: {str(e)}")
                         print(f"Error resetting {tab_name}: {e}")
 
-                # Update command preview
+                # Reset mutual exclusion manager
+                self.mutual_exclusion_manager.reset_all()
+                
+                # Clear command preview
+                self.command_preview.clear()
+                
+                # Update command preview with reset values
                 self.update_command_preview()
 
                 # Report results

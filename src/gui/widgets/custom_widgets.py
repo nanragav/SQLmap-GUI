@@ -281,6 +281,11 @@ class OptionGroup(QGroupBox):
     def set_values(self, values: Dict[str, Any]):
         """Set option values"""
         try:
+            # If empty dictionary is passed, reset all widgets to defaults
+            if not values:
+                self.reset_values()
+                return
+                
             for name, value in values.items():
                 if name in self.widgets:
                     widget = self.widgets[name]
@@ -306,6 +311,26 @@ class OptionGroup(QGroupBox):
                         print(f"Error setting value for {name}: {e}")
         except Exception as e:
             print(f"Error setting values in OptionGroup: {e}")
+    
+    def reset_values(self):
+        """Reset all widgets to their default values"""
+        try:
+            for name, widget in self.widgets.items():
+                try:
+                    if isinstance(widget, QCheckBox):
+                        widget.setChecked(False)
+                    elif isinstance(widget, (QLineEdit, ValidatedLineEdit)):
+                        widget.clear()
+                    elif isinstance(widget, QSpinBox):
+                        widget.setValue(widget.minimum())
+                    elif isinstance(widget, QDoubleSpinBox):
+                        widget.setValue(widget.minimum())
+                    elif isinstance(widget, QComboBox):
+                        widget.setCurrentIndex(0)  # Reset to first item
+                except Exception as e:
+                    print(f"Error resetting widget {name}: {e}")
+        except Exception as e:
+            print(f"Error resetting values in OptionGroup: {e}")
     
     def set_enabled(self, enabled: bool):
         """Enable/disable all widgets in group"""
