@@ -12,3 +12,15 @@ instance/
 *.swp
 *.swo
 migrations/
+
+# Build directories and artifacts
+dist/
+build/
+*.exe
+*.app
+*.dmg
+*.tar.gz
+*.zip
+
+# PyInstaller specific
+*.manifest
