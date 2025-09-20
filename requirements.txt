@@ -23,3 +23,6 @@ pytest-qt==4.2.0
 
 # Optional: For better UI themes
 qdarkstyle==3.2.3
+
+# Build and Distribution
+PyInstaller==6.16.0

@@ -23,8 +23,11 @@ A comprehensive, user-friendly graphical interface for SQLmap - the world's most
 
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
-  - [Linux Installation](#linux-installation)
-  - [Windows Installation](#windows-installation)
+  - [Quick Installation (Recommended)](#-quick-installation-recommended)
+  - [Manual Installation (Development)](#️-manual-installation-development)
+    - [Linux Installation](#linux-installation)
+    - [Windows Installation](#windows-installation)
+    - [macOS Installation](#macos-installation)
 - [SQLmap Installation](#sqlmap-installation)
 - [Quick Start](#quick-start)
 - [Usage](#usage)
@@ -51,6 +54,38 @@ A comprehensive, user-friendly graphical interface for SQLmap - the world's most
 - **Python Virtual Environment**: Recommended for dependency management
 
 ## 🚀 Installation
+
+### 📦 Quick Installation (Recommended)
+
+**Download pre-built executables** - No Python setup required!
+
+1. Go to [Releases](https://github.com/nanragav/SQLmap-GUI/releases)
+2. Download the appropriate file for your system:
+
+   **Windows:** `SQLmap-GUI-windows.zip`
+   - Extract the zip file
+   - Run `SQLmap-GUI.exe`
+
+   **Linux:** `SQLmap-GUI-linux.tar.gz`
+   - Extract: `tar -xzf SQLmap-GUI-linux.tar.gz`
+   - Make executable: `chmod +x SQLmap-GUI`
+   - Run: `./SQLmap-GUI`
+
+   **macOS:** `SQLmap-GUI-macos.zip`
+   - Extract the zip file
+   - Run `SQLmap-GUI.app`
+   - Note: Right-click and select "Open" the first time due to macOS security settings
+
+3. **Install SQLmap separately** (if not already installed):
+   - See [SQLmap Installation](#-sqlmap-installation) section below
+
+> **Note:** Pre-built binaries include all Python dependencies. You only need to install SQLmap separately.
+
+---
+
+### 🛠️ Manual Installation (Development)
+
+If you want to run from source or contribute to development:
 
 ### Linux Installation
 
