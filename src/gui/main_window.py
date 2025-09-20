@@ -1044,11 +1044,16 @@ class SqlmapMainWindow(QMainWindow):
     def save_profile(self):
         """Save current profile"""
         from PyQt6.QtWidgets import QFileDialog
+        import datetime
+        
+        # Generate timestamp-based filename: DDMMYYYYHHMM
+        now = datetime.datetime.now()
+        timestamp_filename = f"{now.day:02d}{now.month:02d}{now.year}{now.hour:02d}{now.minute:02d}.json"
         
         file_path, _ = QFileDialog.getSaveFileName(
             self,
             "Save Profile",
-            "sqlmap_profile.json",
+            timestamp_filename,
             "JSON Files (*.json);;All Files (*)"
         )
         
