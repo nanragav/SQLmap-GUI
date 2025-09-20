@@ -24,11 +24,11 @@ jobs:
     
     - name: Build Windows executable
       run: |
-        pyinstaller sqlmap-gui.spec
+        pyinstaller sqlmap_gui.spec
     
     - name: Create Windows archive
       run: |
-        Compress-Archive -Path dist/SQLmap-GUI.exe -DestinationPath SQLmap-GUI-windows.zip
+        Compress-Archive -Path dist/SQLmap-GUI -DestinationPath SQLmap-GUI-windows.zip
     
     - name: Upload Windows artifact
       uses: actions/upload-artifact@v3
@@ -53,7 +53,7 @@ jobs:
     
     - name: Build Linux executable
       run: |
-        pyinstaller sqlmap-gui.spec
+        pyinstaller sqlmap_gui.spec
     
     - name: Create Linux archive
       run: |
@@ -82,7 +82,7 @@ jobs:
     
     - name: Build macOS executable
       run: |
-        pyinstaller sqlmap-gui.spec
+        pyinstaller sqlmap_gui.spec
     
     - name: Create macOS archive
       run: |
