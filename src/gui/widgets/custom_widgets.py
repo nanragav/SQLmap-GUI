@@ -549,6 +549,20 @@ class LogWidget(QTextEdit):
         font.setStyleHint(QFont.StyleHint.Monospace)
         self.setFont(font)
         
+        # Set dark theme compatible styling
+        self.setStyleSheet("""
+            QTextEdit {
+                background-color: #2B2B2B;
+                color: #E0E0E0;
+                border: 1px solid #555555;
+                border-radius: 4px;
+                padding: 4px;
+            }
+            QTextEdit:focus {
+                border: 1px solid #0078D4;
+            }
+        """)
+        
         self.auto_scroll = True
     
     def append_log(self, text: str, log_type: str = "info"):
@@ -567,11 +581,11 @@ class LogWidget(QTextEdit):
                 self.auto_scroll = False
         
         color_map = {
-            "info": "black",
-            "warning": "#ff8c00",
-            "error": "red",
-            "success": "green",
-            "debug": "gray"
+            "info": "#E0E0E0",      # Light gray - visible on dark backgrounds
+            "warning": "#FFA500",   # Orange - good contrast on both light/dark
+            "error": "#FF6B6B",     # Light red - visible on dark backgrounds
+            "success": "#4CAF50",   # Green - good contrast on both themes
+            "debug": "#9E9E9E"      # Medium gray - visible on dark backgrounds
         }
         
         color = color_map.get(log_type, "black")
