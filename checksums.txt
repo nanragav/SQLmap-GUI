@@ -1,0 +1,2 @@
+6d2b89b45df2b357b10b6e37299c60a8ff8c487c297abefb0cc243b44ce33de5  SQLmap-GUI-linux.tar.gz
+d86ffdacca7e8ef1b0d88fc84059ab2d0d7da86c302956d40f37192b19259162  SQLmap-GUI-macOS.tar.gz
