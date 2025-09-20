@@ -388,6 +388,8 @@ The documentation includes:
 - **Configuration Guide**: Advanced settings and customization
 - **Examples Directory**: Practical usage scenarios and tutorials
 - **API Documentation**: For developers extending the GUI
+- **Release Guide**: How to create and distribute binary releases ([RELEASES.md](RELEASES.md))
+- **Build Guide**: Building from source for all platforms ([BUILDING.md](BUILDING.md))
 
 ### Getting Started with Documentation
 
