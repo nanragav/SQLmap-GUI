@@ -432,6 +432,11 @@ class StatusBar(QWidget):
                     else:
                         self.cpu_label.setText("CPU: 0.0%")
                         self.last_cpu_percent = 0.0
+
+            except KeyboardInterrupt as ke:
+                # Allow graceful exit on keyboard interrupt
+                print("Resource monitoring interrupted by user.")
+                pass
                         
             except Exception as cpu_error:
                 # Fallback: try without interval
@@ -440,6 +445,11 @@ class StatusBar(QWidget):
                     if abs(cpu_percent - self.last_cpu_percent) > 1.0:
                         self.cpu_label.setText(f"CPU: {cpu_percent:.1f}%")
                         self.last_cpu_percent = cpu_percent
+
+                except KeyboardInterrupt as ke:
+                    # Allow graceful exit on keyboard interrupt
+                    print("Resource monitoring interrupted by user.")
+                    pass
                 except Exception:
                     if self.last_cpu_percent != -1:  # Only update once
                         self.cpu_label.setText("CPU: N/A")
@@ -452,6 +462,11 @@ class StatusBar(QWidget):
                 self.cpu_label.setText("CPU: N/A")
                 self.last_memory_mb = -1
                 self.last_cpu_percent = -1
+
+        except KeyboardInterrupt as ke:
+            # Allow graceful exit on keyboard interrupt
+            print("Resource monitoring interrupted by user.")
+            pass
         except Exception as e:
             # Error getting process info - only update once
             if self.last_memory_mb == 0:
