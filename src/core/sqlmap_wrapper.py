@@ -326,71 +326,298 @@ class SqlmapWrapper:
             return False
     
     def _check_python_availability(self):
-        """Check Python availability and set the correct interpreter"""
-        # Check for python3 first, then python
-        self.python_cmd = None
+        """Check Python availability and set the correct interpreter with cross-platform support"""
+        import platform
+        import glob
+        import os
         
-        for cmd in ['python3', 'python']:
+        self.python_cmd = None
+        system = platform.system().lower()
+        
+        # Platform-specific Python command prioritization and path checking
+        python_candidates = []
+        
+        if system == 'windows':
+            # Windows-specific detection
+            base_commands = ['python.exe', 'python3.exe', 'python', 'python3']
+            
+            # Add common Windows installation paths
+            python_paths = [
+                r'C:\Python*\python.exe',
+                r'C:\Program Files\Python*\python.exe', 
+                r'C:\Program Files (x86)\Python*\python.exe',
+                os.path.expanduser(r'~\AppData\Local\Programs\Python\Python*\python.exe'),
+                r'C:\ProgramData\Anaconda3\python.exe',
+                os.path.expanduser(r'~\Anaconda3\python.exe'),
+                os.path.expanduser(r'~\Miniconda3\python.exe')
+            ]
+            
+            # Expand wildcards and add existing paths first (higher priority)
+            for pattern in python_paths:
+                try:
+                    for path in glob.glob(pattern):
+                        if os.path.isfile(path):
+                            python_candidates.append(path)
+                except:
+                    continue
+            
+            # Add base commands to try from PATH
+            python_candidates.extend(base_commands)
+            
+        elif system == 'darwin':  # macOS
+            base_commands = ['python3', 'python']
+            
+            # macOS-specific paths (Homebrew, system, etc.)
+            python_paths = [
+                '/opt/homebrew/bin/python3',  # Apple Silicon Homebrew
+                '/usr/local/bin/python3',     # Intel Homebrew
+                '/usr/bin/python3',           # System Python
+                '/Library/Frameworks/Python.framework/Versions/*/bin/python3',
+                os.path.expanduser('~/Library/Python/*/bin/python3'),
+                '/opt/local/bin/python3'      # MacPorts
+            ]
+            
+            # Expand wildcards and add existing paths first
+            for pattern in python_paths:
+                try:
+                    expanded_pattern = os.path.expanduser(pattern)
+                    for path in glob.glob(expanded_pattern):
+                        if os.path.isfile(path):
+                            python_candidates.append(path)
+                except:
+                    continue
+            
+            python_candidates.extend(base_commands)
+            
+        else:  # Linux and other Unix-like systems
+            base_commands = ['python3', 'python']
+            
+            # Linux-specific paths
+            python_paths = [
+                '/usr/bin/python3',
+                '/usr/local/bin/python3',
+                '/opt/python*/bin/python3',
+                '/snap/bin/python3',
+                os.path.expanduser('~/.local/bin/python3'),
+                '/var/lib/flatpak/exports/bin/python3',
+                os.path.expanduser('~/.local/share/flatpak/exports/bin/python3')
+            ]
+            
+            # Check virtual environments
+            venv_paths = [
+                './venv/bin/python3',
+                './.venv/bin/python3', 
+                os.path.expanduser('~/venv/bin/python3')
+            ]
+            python_paths.extend(venv_paths)
+            
+            # Expand wildcards and add existing paths first
+            for pattern in python_paths:
+                try:
+                    expanded_pattern = os.path.expanduser(pattern)
+                    for path in glob.glob(expanded_pattern):
+                        if os.path.isfile(path):
+                            python_candidates.append(path)
+                except:
+                    continue
+            
+            python_candidates.extend(base_commands)
+        
+        # Try each Python candidate
+        for cmd in python_candidates:
             try:
-                result = subprocess.run([cmd, '--version'], capture_output=True, text=True, timeout=3)
+                result = subprocess.run([cmd, '--version'], 
+                                      capture_output=True, text=True, timeout=3)
                 if result.returncode == 0:
+                    version = result.stdout.strip() or result.stderr.strip()
                     self.python_cmd = cmd
                     self.python_available = True
-                    print(f"Found Python interpreter: {cmd} - {result.stdout.strip()}")
-                    break
-            except (FileNotFoundError, subprocess.TimeoutExpired):
+                    print(f"Found Python interpreter: {cmd} - {version}")
+                    return
+            except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
                 continue
         
-        if not self.python_cmd:
-            self.python_available = False
+        # If no Python found, show platform-specific guidance
+        self.python_available = False
+        if system == 'windows':
             print("Warning: No Python interpreter found!")
+            print("Try installing Python from python.org or Microsoft Store")
+        elif system == 'darwin':
+            print("Warning: No Python interpreter found!")
+            print("Try: brew install python3 or download from python.org")
+        else:
+            print("Warning: No Python interpreter found!")
+            print("Try: sudo apt install python3 (Ubuntu/Debian) or sudo yum install python3 (RHEL/CentOS)")
     
     def _check_sqlmap_availability(self):
-        """Check if sqlmap is available and get its version"""
-        try:
-            # Try running sqlmap directly first with empty input to handle "Press Enter" prompt
-            result = subprocess.run([self.sqlmap_path, '--version'], 
-                                  input='', capture_output=True, text=True, timeout=10)
+        """Check if sqlmap is available with enhanced cross-platform detection"""
+        import platform
+        import glob
+        import os
+        
+        system = platform.system().lower()
+        sqlmap_candidates = []
+        
+        # Start with the configured path
+        if self.sqlmap_path:
+            sqlmap_candidates.append(self.sqlmap_path)
+        
+        # Platform-specific SQLmap detection
+        if system == 'windows':
+            # Windows-specific paths and commands
+            windows_paths = [
+                'sqlmap.exe',
+                'sqlmap',
+                'sqlmap.py',
+                r'C:\Python*\Scripts\sqlmap.exe',
+                r'C:\Program Files\Python*\Scripts\sqlmap.exe',
+                r'C:\Program Files (x86)\Python*\Scripts\sqlmap.exe',
+                os.path.expanduser(r'~\AppData\Local\Programs\Python\Python*\Scripts\sqlmap.exe'),
+                r'C:\tools\sqlmap\sqlmap.py',
+                r'C:\sqlmap\sqlmap.py',
+                r'C:\ProgramData\chocolatey\lib\sqlmap\tools\sqlmap.py',
+                r'C:\Anaconda3\Scripts\sqlmap.exe',
+                os.path.expanduser(r'~\Anaconda3\Scripts\sqlmap.exe'),
+                r'C:\ProgramData\Anaconda3\Scripts\sqlmap.exe'
+            ]
             
-            # SQLmap might return non-zero exit code but still output version info
-            if result.stdout and ('sqlmap' in result.stdout.lower() or any(c.isdigit() for c in result.stdout)):
-                self.sqlmap_available = True
-                # Extract just the version line, ignore the "Press Enter" message
-                version_line = result.stdout.strip().split('\n')[0]
-                print(f"SQLmap found: {version_line}")
-                return
+            # Expand wildcards and add existing paths
+            for pattern in windows_paths:
+                try:
+                    expanded_pattern = os.path.expanduser(pattern)
+                    if '*' in expanded_pattern:
+                        for path in glob.glob(expanded_pattern):
+                            if os.path.isfile(path):
+                                sqlmap_candidates.append(path)
+                    else:
+                        if os.path.isfile(expanded_pattern):
+                            sqlmap_candidates.append(expanded_pattern)
+                        else:
+                            # Add to candidates to try via PATH
+                            sqlmap_candidates.append(pattern)
+                except:
+                    continue
+                    
+        elif system == 'darwin':  # macOS
+            macos_paths = [
+                'sqlmap',
+                '/usr/local/bin/sqlmap',
+                '/opt/homebrew/bin/sqlmap',
+                '/usr/local/Cellar/sqlmap/*/bin/sqlmap',
+                '/opt/homebrew/Cellar/sqlmap/*/bin/sqlmap',
+                os.path.expanduser('~/Library/Python/*/bin/sqlmap'),
+                '/Library/Frameworks/Python.framework/Versions/*/bin/sqlmap',
+                '/opt/local/bin/sqlmap',  # MacPorts
+                os.path.expanduser('~/sqlmap/sqlmap.py'),
+                '/usr/local/sqlmap/sqlmap.py',
+                '/opt/sqlmap/sqlmap.py'
+            ]
             
-            # If direct execution fails, try with python interpreter
-            if self.python_cmd and hasattr(self, 'python_cmd'):
-                result = subprocess.run([self.python_cmd, self.sqlmap_path, '--version'], 
+            for pattern in macos_paths:
+                try:
+                    expanded_pattern = os.path.expanduser(pattern)
+                    if '*' in expanded_pattern:
+                        for path in glob.glob(expanded_pattern):
+                            if os.path.isfile(path):
+                                sqlmap_candidates.append(path)
+                    else:
+                        if os.path.isfile(expanded_pattern):
+                            sqlmap_candidates.append(expanded_pattern)
+                        else:
+                            sqlmap_candidates.append(pattern)
+                except:
+                    continue
+                    
+        else:  # Linux and other Unix-like
+            linux_paths = [
+                'sqlmap',
+                '/usr/bin/sqlmap',
+                '/usr/local/bin/sqlmap',
+                '/opt/sqlmap/sqlmap.py',
+                os.path.expanduser('~/.local/bin/sqlmap'),
+                '/snap/bin/sqlmap',
+                '/var/lib/flatpak/exports/bin/sqlmap',
+                os.path.expanduser('~/.local/share/flatpak/exports/bin/sqlmap'),
+                '/usr/share/sqlmap/sqlmap.py',  # Debian/Ubuntu package
+                '/usr/local/share/sqlmap/sqlmap.py',
+                os.path.expanduser('~/sqlmap/sqlmap.py'),
+                os.path.expanduser('~/tools/sqlmap/sqlmap.py'),
+                '/opt/tools/sqlmap/sqlmap.py',
+                './venv/bin/sqlmap',
+                './.venv/bin/sqlmap',
+                os.path.expanduser('~/venv/bin/sqlmap')
+            ]
+            
+            for pattern in linux_paths:
+                try:
+                    expanded_pattern = os.path.expanduser(pattern)
+                    if os.path.isfile(expanded_pattern):
+                        sqlmap_candidates.append(expanded_pattern)
+                    else:
+                        sqlmap_candidates.append(pattern)
+                except:
+                    continue
+        
+        # Try each SQLmap candidate
+        for sqlmap_path in sqlmap_candidates:
+            try:
+                # Try running sqlmap directly first
+                result = subprocess.run([sqlmap_path, '--version'], 
                                       input='', capture_output=True, text=True, timeout=10)
+                
+                # SQLmap might return non-zero exit code but still output version info
                 if result.stdout and ('sqlmap' in result.stdout.lower() or any(c.isdigit() for c in result.stdout)):
                     self.sqlmap_available = True
-                    # Extract just the version line, ignore the "Press Enter" message
+                    self.sqlmap_path = sqlmap_path
                     version_line = result.stdout.strip().split('\n')[0]
-                    print(f"SQLmap found (via {self.python_cmd}): {version_line}")
-                    # Use python interpreter to run sqlmap
-                    self.sqlmap_path = [self.python_cmd, self.sqlmap_path]
-                else:
-                    self.sqlmap_available = False
-                    print(f"Warning: SQLmap returned no valid output")
-                    if result.stderr:
-                        print(f"SQLmap stderr: {result.stderr.strip()}")
-            else:
-                self.sqlmap_available = False
-                print(f"Warning: SQLmap not found at path: {self.sqlmap_path}")
-                print("Make sure SQLmap is installed and in your PATH")
+                    print(f"SQLmap found: {version_line} at {sqlmap_path}")
+                    return
                 
-        except FileNotFoundError:
-            self.sqlmap_available = False
-            print(f"Warning: SQLmap not found at path: {self.sqlmap_path}")
-            print("Make sure SQLmap is installed and in your PATH")
-        except subprocess.TimeoutExpired:
-            self.sqlmap_available = False
-            print("Warning: SQLmap --version command timed out")
-        except Exception as e:
-            self.sqlmap_available = False
-            print(f"Warning: Error checking SQLmap availability: {e}")
+            except (FileNotFoundError, OSError):
+                # If direct execution fails, try with python interpreter
+                if self.python_cmd and os.path.isfile(sqlmap_path) and sqlmap_path.endswith('.py'):
+                    try:
+                        result = subprocess.run([self.python_cmd, sqlmap_path, '--version'], 
+                                              input='', capture_output=True, text=True, timeout=10)
+                        if result.stdout and ('sqlmap' in result.stdout.lower() or any(c.isdigit() for c in result.stdout)):
+                            self.sqlmap_available = True
+                            # Use python interpreter to run sqlmap
+                            self.sqlmap_path = [self.python_cmd, sqlmap_path]
+                            version_line = result.stdout.strip().split('\n')[0]
+                            print(f"SQLmap found (via {self.python_cmd}): {version_line} at {sqlmap_path}")
+                            return
+                    except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
+                        continue
+                continue
+            except subprocess.TimeoutExpired:
+                print(f"Warning: SQLmap --version timed out for {sqlmap_path}")
+                continue
+        
+        # If no SQLmap found, show platform-specific guidance
+        self.sqlmap_available = False
+        if system == 'windows':
+            print("Warning: SQLmap not found!")
+            print("Try: pip install sqlmap or download from http://sqlmap.org/")
+            print("Common installation paths checked:")
+            print("- Python Scripts directory")
+            print("- C:\\tools\\sqlmap\\")
+            print("- C:\\sqlmap\\")
+        elif system == 'darwin':
+            print("Warning: SQLmap not found!")
+            print("Try: brew install sqlmap or pip install sqlmap")
+            print("Common installation paths checked:")
+            print("- Homebrew (/usr/local/bin/ or /opt/homebrew/bin/)")
+            print("- Python user directory")
+            print("- Manual installation directories")
+        else:
+            print("Warning: SQLmap not found!")
+            print("Try: sudo apt install sqlmap (Ubuntu/Debian)")
+            print("     sudo yum install sqlmap (RHEL/CentOS)")
+            print("     pip install sqlmap")
+            print("Common installation paths checked:")
+            print("- System package directories (/usr/bin/)")
+            print("- User local directory (~/.local/bin/)")
+            print("- Manual installation directories")
     
     def _load_all_parameters(self):
         """Load ALL SQLmap parameters with proper mappings"""
