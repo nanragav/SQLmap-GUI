@@ -56,7 +56,7 @@ class SqlmapMainWindow(QMainWindow):
         
         # Initialize core components
         self.config_manager = ConfigManager()
-        self.sqlmap_wrapper = SqlmapWrapper()
+        self.sqlmap_wrapper = SqlmapWrapper()  # Fast initialization now
         self.mutual_exclusion_manager = MutualExclusionManager()
         self.current_scan_thread = None
         
@@ -69,9 +69,12 @@ class SqlmapMainWindow(QMainWindow):
         # Load settings
         self.load_settings()
         
-        # Show welcome message
-        self.log_widget.append_log("SQLmap GUI initialized successfully", "success")
-        self.log_widget.append_log("Ready to start SQL injection testing", "info")
+        # Show initial message and start async initialization
+        self.log_widget.append_log("SQLmap GUI loaded successfully", "success")
+        self.log_widget.append_log("Checking SQLmap and Python availability...", "info")
+        
+        # Start async initialization of SQLmap/Python
+        self.start_async_initialization()
     
     def setup_ui(self):
         """Setup the main UI layout"""
@@ -667,6 +670,13 @@ class SqlmapMainWindow(QMainWindow):
     def start_scan(self, use_sudo: bool = False):
         """Start SQLmap scan"""
         try:
+            # Check if SQLmap is available before starting scan
+            if not self.sqlmap_wrapper.sqlmap_available:
+                QMessageBox.warning(self, "SQLmap Not Available", 
+                                  "SQLmap is not available or initialization is still in progress.\n\n"
+                                  "Please ensure SQLmap is installed and try again.")
+                return
+            
             # Collect options first
             all_options = {}
             for tab_name, tab in self.tabs.items():
@@ -1329,6 +1339,55 @@ Problem Tabs: {results['total_tabs'] - results['working_tabs']}
         self.save_settings()
         
         event.accept()
+
+    def start_async_initialization(self):
+        """Start async initialization of SQLmap and Python"""
+        self.init_thread = SqlmapInitializationThread(self.sqlmap_wrapper)
+        self.init_thread.initialization_complete.connect(self.on_initialization_complete)
+        self.init_thread.initialization_failed.connect(self.on_initialization_failed)
+        self.init_thread.start()
+
+    def on_initialization_complete(self, sqlmap_available, python_available):
+        """Handle successful initialization"""
+        if sqlmap_available and python_available:
+            self.log_widget.append_log("✅ SQLmap and Python are available and ready", "success")
+            self.log_widget.append_log("Ready to start SQL injection testing", "info")
+        elif sqlmap_available:
+            self.log_widget.append_log("✅ SQLmap is available", "success")
+            self.log_widget.append_log("⚠️ Python interpreter not found - some features may be limited", "warning")
+        elif python_available:
+            self.log_widget.append_log("✅ Python interpreter is available", "success")
+            self.log_widget.append_log("❌ SQLmap not found - please install SQLmap and ensure it's in your PATH", "error")
+        else:
+            self.log_widget.append_log("❌ Neither SQLmap nor Python interpreter found", "error")
+            self.log_widget.append_log("Please install SQLmap and Python to use this tool", "error")
+
+    def on_initialization_failed(self, error_message):
+        """Handle initialization failure"""
+        self.log_widget.append_log(f"❌ Initialization failed: {error_message}", "error")
+        self.log_widget.append_log("Some features may not work correctly", "warning")
+
+
+class SqlmapInitializationThread(QThread):
+    """Thread for async initialization of SQLmap wrapper"""
+    
+    initialization_complete = pyqtSignal(bool, bool)  # sqlmap_available, python_available
+    initialization_failed = pyqtSignal(str)  # error_message
+    
+    def __init__(self, sqlmap_wrapper):
+        super().__init__()
+        self.sqlmap_wrapper = sqlmap_wrapper
+    
+    def run(self):
+        """Run the initialization in background"""
+        try:
+            self.sqlmap_wrapper.initialize_async()
+            self.initialization_complete.emit(
+                self.sqlmap_wrapper.sqlmap_available,
+                self.sqlmap_wrapper.python_available
+            )
+        except Exception as e:
+            self.initialization_failed.emit(str(e))
 
 
 class SqlmapScanThread(QThread):

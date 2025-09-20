@@ -300,12 +300,30 @@ class SqlmapWrapper:
     
     def __init__(self, sqlmap_path: str = "sqlmap"):
         self.sqlmap_path = sqlmap_path
-        self._check_sqlmap_availability()
+        self.python_cmd = None
+        self.sqlmap_available = False
+        self.python_available = False
+        self.initialization_complete = False
+        
+        # Load static data immediately (fast operations)
         self._load_all_parameters()
         self._load_target_params()
         self._load_mutual_exclusions()
         self._load_high_risk_params()
-        self._check_python_availability()
+        
+        # Defer slow operations (SQLmap/Python checks) to async initialization
+        # This allows the GUI to start immediately
+    
+    def initialize_async(self):
+        """Initialize SQLmap and Python availability asynchronously"""
+        try:
+            self._check_python_availability()
+            self._check_sqlmap_availability()
+            self.initialization_complete = True
+            return True
+        except Exception as e:
+            print(f"Error during async initialization: {e}")
+            return False
     
     def _check_python_availability(self):
         """Check Python availability and set the correct interpreter"""
@@ -314,15 +332,17 @@ class SqlmapWrapper:
         
         for cmd in ['python3', 'python']:
             try:
-                result = subprocess.run([cmd, '--version'], capture_output=True, text=True, timeout=5)
+                result = subprocess.run([cmd, '--version'], capture_output=True, text=True, timeout=3)
                 if result.returncode == 0:
                     self.python_cmd = cmd
+                    self.python_available = True
                     print(f"Found Python interpreter: {cmd} - {result.stdout.strip()}")
                     break
             except (FileNotFoundError, subprocess.TimeoutExpired):
                 continue
         
         if not self.python_cmd:
+            self.python_available = False
             print("Warning: No Python interpreter found!")
     
     def _check_sqlmap_availability(self):
@@ -330,34 +350,41 @@ class SqlmapWrapper:
         try:
             # Try running sqlmap directly first
             result = subprocess.run([self.sqlmap_path, '--version'], 
-                                  capture_output=True, text=True, timeout=10)
+                                  capture_output=True, text=True, timeout=5)
             
             if result.returncode == 0:
+                self.sqlmap_available = True
                 print(f"SQLmap found: {result.stdout.strip()}")
                 return
             
             # If direct execution fails, try with python interpreter
             if self.python_cmd and hasattr(self, 'python_cmd'):
                 result = subprocess.run([self.python_cmd, self.sqlmap_path, '--version'], 
-                                      capture_output=True, text=True, timeout=10)
+                                      capture_output=True, text=True, timeout=5)
                 if result.returncode == 0:
+                    self.sqlmap_available = True
                     print(f"SQLmap found (via {self.python_cmd}): {result.stdout.strip()}")
                     # Use python interpreter to run sqlmap
                     self.sqlmap_path = [self.python_cmd, self.sqlmap_path]
                 else:
+                    self.sqlmap_available = False
                     print(f"Warning: SQLmap returned non-zero exit code: {result.returncode}")
                     if result.stderr:
                         print(f"SQLmap stderr: {result.stderr.strip()}")
             else:
+                self.sqlmap_available = False
                 print(f"Warning: SQLmap not found at path: {self.sqlmap_path}")
                 print("Make sure SQLmap is installed and in your PATH")
                 
         except FileNotFoundError:
+            self.sqlmap_available = False
             print(f"Warning: SQLmap not found at path: {self.sqlmap_path}")
             print("Make sure SQLmap is installed and in your PATH")
         except subprocess.TimeoutExpired:
+            self.sqlmap_available = False
             print("Warning: SQLmap --version command timed out")
         except Exception as e:
+            self.sqlmap_available = False
             print(f"Warning: Error checking SQLmap availability: {e}")
     
     def _load_all_parameters(self):
