@@ -125,6 +125,54 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
+### macOS Installation
+
+#### Step 1: Install Homebrew (if not already installed)
+
+```bash
+# Install Homebrew package manager
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# Add Homebrew to PATH (follow the instructions shown after installation)
+echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
+eval "$(/opt/homebrew/bin/brew shellenv)"
+```
+
+#### Step 2: Install Python and Git
+
+```bash
+# Install Python 3.8+ and Git
+brew install python git
+
+# Verify installations
+python3 --version
+git --version
+```
+
+#### Step 3: Clone and Setup Project
+
+```bash
+# Clone the repository
+git clone https://github.com/nanragav/SQLmap-GUI.git
+cd sqlmap-gui
+
+# Create virtual environment using Python 3
+python3 -m venv .venv
+
+# Activate virtual environment
+source .venv/bin/activate
+
+# Install Python dependencies
+pip install -r requirements.txt
+```
+
+#### macOS-Specific Notes
+
+- **Apple Silicon (M1/M2/M3)**: All dependencies are compatible with ARM64 architecture
+- **Security**: You may need to allow the application in System Preferences > Security & Privacy
+- **Python Path**: Use `python3` instead of `python` on macOS to avoid conflicts with system Python 2.x
+- **Permissions**: If you encounter permission issues, avoid using `sudo` with pip. Use virtual environments instead
+
 ## 🛠️ SQLmap Installation
 
 ### Linux Installation
