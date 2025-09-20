@@ -348,11 +348,12 @@ class StatusBar(QWidget):
         # Timer for updating resource info - less frequent and more efficient
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_resources)
-        self.timer.start(5000)  # Update every 5 seconds instead of 2
+        self.timer.start(10000)  # Update every 10 seconds to reduce CPU overhead
         
         # Cache for resource values to avoid unnecessary updates
         self.last_memory_mb = 0
         self.last_cpu_percent = 0.0
+        self.cpu_measurement_count = 0  # Track CPU measurements for non-blocking approach
         
         # Flag to control monitoring
         self.monitoring_enabled = True
@@ -420,12 +421,20 @@ class StatusBar(QWidget):
                 self.memory_label.setText(f"Memory: {memory_mb:.1f} MB")
                 self.last_memory_mb = memory_mb
             
-            # CPU usage - use interval for more accurate measurement
+            # CPU usage - use non-blocking approach
             try:
-                cpu_percent = process.cpu_percent(interval=0.5)  # Shorter interval for accuracy
+                # First call to cpu_percent() needs to establish baseline (non-blocking)
+                if self.cpu_measurement_count == 0:
+                    # Initial call to establish baseline
+                    process.cpu_percent()
+                    self.cpu_measurement_count = 1
+                    cpu_percent = 0.0  # Show 0% on first measurement
+                else:
+                    # Subsequent calls will return actual CPU usage (non-blocking)
+                    cpu_percent = process.cpu_percent()
                 
-                # Only update if CPU changed significantly (>1% difference)
-                if abs(cpu_percent - self.last_cpu_percent) > 1.0:
+                # Only update if CPU changed significantly (>2% difference) to reduce flicker
+                if abs(cpu_percent - self.last_cpu_percent) > 2.0:
                     if cpu_percent >= 0:  # Valid CPU percentage
                         self.cpu_label.setText(f"CPU: {cpu_percent:.1f}%")
                         self.last_cpu_percent = cpu_percent
@@ -439,21 +448,10 @@ class StatusBar(QWidget):
                 pass
                         
             except Exception as cpu_error:
-                # Fallback: try without interval
-                try:
-                    cpu_percent = process.cpu_percent()
-                    if abs(cpu_percent - self.last_cpu_percent) > 1.0:
-                        self.cpu_label.setText(f"CPU: {cpu_percent:.1f}%")
-                        self.last_cpu_percent = cpu_percent
-
-                except KeyboardInterrupt as ke:
-                    # Allow graceful exit on keyboard interrupt
-                    print("Resource monitoring interrupted by user.")
-                    pass
-                except Exception:
-                    if self.last_cpu_percent != -1:  # Only update once
-                        self.cpu_label.setText("CPU: N/A")
-                        self.last_cpu_percent = -1
+                # Fallback: show last known value or error
+                if self.last_cpu_percent != -1:  # Only update once
+                    self.cpu_label.setText("CPU: N/A")
+                    self.last_cpu_percent = -1
             
         except ImportError:
             # psutil not available - only update once
@@ -482,6 +480,7 @@ class StatusBar(QWidget):
             # Reset cache when re-enabling
             self.last_memory_mb = 0
             self.last_cpu_percent = 0.0
+            self.cpu_measurement_count = 0  # Reset CPU measurement counter
             # Update immediately
             self.update_resources()
         else:
@@ -492,6 +491,7 @@ class StatusBar(QWidget):
         """Force an immediate resource update"""
         self.last_memory_mb = 0  # Reset cache to force update
         self.last_cpu_percent = 0.0
+        self.cpu_measurement_count = 0  # Reset CPU measurement counter
         self.update_resources()
     
     def debug_cpu_monitoring(self):
