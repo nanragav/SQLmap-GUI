@@ -870,7 +870,8 @@ class SqlmapMainWindow(QMainWindow):
         """Reset all options to defaults"""
         reply = QMessageBox.question(self, "Reset Options",
                                    "Are you sure you want to reset all options to defaults?\n\n"
-                                   "This will clear all current settings and restore default values.",
+                                   "This will clear all current settings, restore default values,\n"
+                                   "and clear the execution log.",
                                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
 
         if reply == QMessageBox.StandardButton.Yes:
@@ -894,6 +895,9 @@ class SqlmapMainWindow(QMainWindow):
                 # Clear command preview
                 self.command_preview.clear()
                 
+                # Clear execution log
+                self.log_widget.clear_log()
+                
                 # Update command preview with reset values
                 self.update_command_preview()
 
@@ -901,12 +905,12 @@ class SqlmapMainWindow(QMainWindow):
                 if error_tabs:
                     error_msg = "\n".join(error_tabs)
                     QMessageBox.warning(self, "Reset Completed with Errors",
-                                      f"Successfully reset {reset_count} tabs, but encountered errors in:\n\n{error_msg}")
+                                      f"Successfully reset {reset_count} tabs and cleared execution log, but encountered errors in:\n\n{error_msg}")
                 else:
                     QMessageBox.information(self, "Reset Complete",
-                                          f"Successfully reset all {reset_count} tabs to default values.")
+                                          f"Successfully reset all {reset_count} tabs to default values and cleared execution log.")
 
-                self.log_widget.append_log(f"Reset {reset_count} tabs to defaults", "success")
+                self.log_widget.append_log(f"Reset {reset_count} tabs to defaults and cleared execution log", "success")
                 if error_tabs:
                     self.log_widget.append_log(f"Errors in {len(error_tabs)} tabs during reset", "warning")
 
@@ -997,9 +1001,20 @@ class SqlmapMainWindow(QMainWindow):
             # Update command preview
             self.update_command_preview()
 
+            # Restore execution log if available
+            execution_log = metadata.get('execution_log')
+            if execution_log:
+                self.log_widget.clear_log()  # Clear current log
+                self.log_widget.append_log("=== Execution log restored from profile ===", "info")
+                self.log_widget.append(execution_log)  # Add saved log content
+                self.log_widget.append_log("=== End of restored execution log ===", "info")
+
             # Report results
             version = metadata.get('version', 'Unknown')
             created = metadata.get('created_at', 'Unknown')
+            has_execution_log = bool(metadata.get('execution_log'))
+            
+            log_message = " and execution log" if has_execution_log else ""
 
             if error_tabs:
                 error_msg = "\n".join(error_tabs)
@@ -1007,15 +1022,15 @@ class SqlmapMainWindow(QMainWindow):
                                   f"Profile loaded from {file_path}\n"
                                   f"Version: {version}\n"
                                   f"Created: {created}\n\n"
-                                  f"Loaded {loaded_tabs} tabs successfully, but encountered errors in:\n\n{error_msg}")
+                                  f"Loaded {loaded_tabs} tabs{log_message} successfully, but encountered errors in:\n\n{error_msg}")
             else:
                 QMessageBox.information(self, "Profile Loaded",
                                       f"Profile loaded successfully from:\n{file_path}\n\n"
                                       f"Version: {version}\n"
                                       f"Created: {created}\n"
-                                      f"Loaded options for all {loaded_tabs} tabs.")
+                                      f"Loaded options for all {loaded_tabs} tabs{log_message}.")
 
-            self.log_widget.append_log(f"Profile loaded from {file_path} ({loaded_tabs} tabs)", "success")
+            self.log_widget.append_log(f"Profile loaded from {file_path} ({loaded_tabs} tabs{log_message})", "success")
             if error_tabs:
                 self.log_widget.append_log(f"Errors in {len(error_tabs)} tabs during load", "warning")
 
@@ -1074,7 +1089,8 @@ class SqlmapMainWindow(QMainWindow):
                 'total_tabs': len(self.tabs),
                 'saved_tabs': saved_tabs,
                 'errors': error_tabs if error_tabs else None,
-                'command_preview': self.command_preview.toPlainText() if hasattr(self, 'command_preview') else None
+                'command_preview': self.command_preview.toPlainText() if hasattr(self, 'command_preview') else None,
+                'execution_log': self.log_widget.toPlainText() if hasattr(self, 'log_widget') else None
             }
 
             # Save to file with pretty formatting
@@ -1082,17 +1098,20 @@ class SqlmapMainWindow(QMainWindow):
                 json.dump(profile_data, f, indent=2, ensure_ascii=False)
 
             # Report results
+            has_execution_log = bool(self.log_widget.toPlainText() if hasattr(self, 'log_widget') else False)
+            log_message = " and execution log" if has_execution_log else ""
+            
             if error_tabs:
                 error_msg = "\n".join(error_tabs)
                 QMessageBox.warning(self, "Save Completed with Errors",
                                   f"Profile saved to {file_path}\n\n"
-                                  f"Saved {saved_tabs} tabs successfully, but encountered errors in:\n\n{error_msg}")
+                                  f"Saved {saved_tabs} tabs{log_message} successfully, but encountered errors in:\n\n{error_msg}")
             else:
                 QMessageBox.information(self, "Save Complete",
                                       f"Profile saved successfully to:\n{file_path}\n\n"
-                                      f"Saved options from all {saved_tabs} tabs.")
+                                      f"Saved options from all {saved_tabs} tabs{log_message}.")
 
-            self.log_widget.append_log(f"Profile saved to {file_path} ({saved_tabs} tabs)", "success")
+            self.log_widget.append_log(f"Profile saved to {file_path} ({saved_tabs} tabs{log_message})", "success")
             if error_tabs:
                 self.log_widget.append_log(f"Errors in {len(error_tabs)} tabs during save", "warning")
 
