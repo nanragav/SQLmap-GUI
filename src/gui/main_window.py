@@ -644,8 +644,8 @@ class SqlmapMainWindow(QMainWindow):
                         print(f"Error getting options from {tab_name}: {e}")
                         continue
             
-            # Build command using wrapper with auto_batch setting
-            command = self.sqlmap_wrapper.build_command(all_options, force_batch=True)
+            # Build command using wrapper - respect user's batch preference
+            command = self.sqlmap_wrapper.build_command(all_options, force_batch=False)
             
             # Display in preview with proper formatting
             formatted_command = ' '.join(command)
@@ -679,7 +679,7 @@ class SqlmapMainWindow(QMainWindow):
             
             if not validation_result.is_valid:
                 # Show validation dialog for errors
-                command_list = self.sqlmap_wrapper.build_command(all_options, force_batch=True)
+                command_list = self.sqlmap_wrapper.build_command(all_options, force_batch=False)
                 command_string = ' '.join(command_list)
                 
                 reply = QMessageBox.critical(self, "Command Validation Failed", 
@@ -792,7 +792,7 @@ class SqlmapMainWindow(QMainWindow):
             
             if validation_result.is_valid:
                 # Build command to show in success message
-                command_list = self.sqlmap_wrapper.build_command(all_options, force_batch=True)
+                command_list = self.sqlmap_wrapper.build_command(all_options, force_batch=False)
                 command_string = ' '.join(command_list)
                 
                 QMessageBox.information(self, "Validation Success", 
@@ -801,7 +801,7 @@ class SqlmapMainWindow(QMainWindow):
                 return True
             else:
                 # Show comprehensive validation dialog for errors
-                command_list = self.sqlmap_wrapper.build_command(all_options, force_batch=True)
+                command_list = self.sqlmap_wrapper.build_command(all_options, force_batch=False)
                 command_string = ' '.join(command_list)
                 
                 reply = QMessageBox.question(self, "Validation Issues Found", 
@@ -834,7 +834,7 @@ class SqlmapMainWindow(QMainWindow):
             validation = self.sqlmap_wrapper.validate_options(all_options)
             
             # Get current command for display
-            command_list = self.sqlmap_wrapper.build_command(all_options, force_batch=True)
+            command_list = self.sqlmap_wrapper.build_command(all_options, force_batch=False)
             command_string = ' '.join(command_list)
             
             # Show validation dialog

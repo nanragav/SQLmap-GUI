@@ -611,7 +611,7 @@ class SqlmapWrapper:
             }
         }
     
-    def build_command(self, options: Dict[str, Any], force_batch: bool = True) -> List[str]:
+    def build_command(self, options: Dict[str, Any], force_batch: bool = False) -> List[str]:
         """Build complete SQLmap command with smart parameter handling"""
         import shlex
         
@@ -621,7 +621,7 @@ class SqlmapWrapper:
         else:
             cmd = [self.sqlmap_path]
         
-        # Handle auto-batch
+        # Handle auto-batch only if user hasn't explicitly set batch mode
         if force_batch and not options.get('batch'):
             if options.get('auto_batch', True):
                 options = options.copy()
@@ -631,11 +631,12 @@ class SqlmapWrapper:
         gui_options = {'auto_batch', '_metadata'}
         processed_options = {k: v for k, v in options.items() if k not in gui_options}
         
-        # Add flags to ensure non-interactive operation
-        if force_batch:
+        # Only add batch mode if user has explicitly enabled it or if forced without user preference
+        user_set_batch = 'batch' in options and options['batch']
+        if force_batch and not user_set_batch:
             processed_options['batch'] = True
-            processed_options['disable_coloring'] = True  # Disable ANSI color codes
-            processed_options['purge'] = False  # Don't purge session files in batch mode
+        
+        # Don't force disable_coloring - let user control it completely
         
         # Track flags already added to avoid duplicates
         flags_added = set()

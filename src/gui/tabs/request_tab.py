@@ -90,11 +90,6 @@ class RequestTab(QWidget):
                 'default': 1
             },
             {
-                'name': 'batch',
-                'type': 'checkbox',
-                'label': 'Never Ask for User Input (Use Default Behavior)'
-            },
-            {
                 'name': 'tor',
                 'type': 'checkbox',
                 'label': 'Use Tor Anonymizer'
