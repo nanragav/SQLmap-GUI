@@ -348,27 +348,32 @@ class SqlmapWrapper:
     def _check_sqlmap_availability(self):
         """Check if sqlmap is available and get its version"""
         try:
-            # Try running sqlmap directly first
+            # Try running sqlmap directly first with empty input to handle "Press Enter" prompt
             result = subprocess.run([self.sqlmap_path, '--version'], 
-                                  capture_output=True, text=True, timeout=5)
+                                  input='', capture_output=True, text=True, timeout=10)
             
-            if result.returncode == 0:
+            # SQLmap might return non-zero exit code but still output version info
+            if result.stdout and ('sqlmap' in result.stdout.lower() or any(c.isdigit() for c in result.stdout)):
                 self.sqlmap_available = True
-                print(f"SQLmap found: {result.stdout.strip()}")
+                # Extract just the version line, ignore the "Press Enter" message
+                version_line = result.stdout.strip().split('\n')[0]
+                print(f"SQLmap found: {version_line}")
                 return
             
             # If direct execution fails, try with python interpreter
             if self.python_cmd and hasattr(self, 'python_cmd'):
                 result = subprocess.run([self.python_cmd, self.sqlmap_path, '--version'], 
-                                      capture_output=True, text=True, timeout=5)
-                if result.returncode == 0:
+                                      input='', capture_output=True, text=True, timeout=10)
+                if result.stdout and ('sqlmap' in result.stdout.lower() or any(c.isdigit() for c in result.stdout)):
                     self.sqlmap_available = True
-                    print(f"SQLmap found (via {self.python_cmd}): {result.stdout.strip()}")
+                    # Extract just the version line, ignore the "Press Enter" message
+                    version_line = result.stdout.strip().split('\n')[0]
+                    print(f"SQLmap found (via {self.python_cmd}): {version_line}")
                     # Use python interpreter to run sqlmap
                     self.sqlmap_path = [self.python_cmd, self.sqlmap_path]
                 else:
                     self.sqlmap_available = False
-                    print(f"Warning: SQLmap returned non-zero exit code: {result.returncode}")
+                    print(f"Warning: SQLmap returned no valid output")
                     if result.stderr:
                         print(f"SQLmap stderr: {result.stderr.strip()}")
             else:
