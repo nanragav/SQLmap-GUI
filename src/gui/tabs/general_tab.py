@@ -85,6 +85,15 @@ class GeneralTab(QWidget):
         """Create behavior options"""
         behavior_options = [
             {
+                'name': 'verbose',
+                'type': 'number',
+                'label': 'Verbosity Level',
+                'min': 0,
+                'max': 6,
+                'default': 1,
+                'tooltip': 'Verbosity level: 0-6 (default 1) (-v VERBOSE)'
+            },
+            {
                 'name': 'batch',
                 'type': 'checkbox',
                 'label': 'Never Ask for User Input, Use Default Behavior',

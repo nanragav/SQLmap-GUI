@@ -759,6 +759,7 @@ class SqlmapWrapper:
             'fresh_queries': {'flag': '--fresh-queries', 'type': 'flag'},
             'cleanup': {'flag': '--cleanup', 'type': 'flag'},
             'answers': {'flag': '--answers', 'type': 'quoted_arg'},
+            'verbose': {'flag': '-v', 'type': 'quoted_arg'},
             'forms': {'flag': '--forms', 'type': 'flag'},
             'crawl': {'flag': '--crawl', 'type': 'quoted_arg'},
             'crawl_exclude': {'flag': '--crawl-exclude', 'type': 'quoted_arg'},
@@ -960,10 +961,10 @@ class SqlmapWrapper:
                             cmd.extend([flag, value_str])
                         # Special handling for SQL injection payloads and shell commands - these often contain quotes
                         # and should be passed as-is to sqlmap which will handle them properly
-                        # Also include file paths that should not be quoted
+                        # Also include file paths and detection strings that should not be quoted
                         elif param_name in ['prefix', 'suffix', 'sql_query', 'os_cmd', 'tamper', 'headers', 'cookie', 'data', 
                                           'shared_lib', 'log_file', 'bulk_file', 'request_file', 'sql_file', 
-                                          'file_read', 'file_write', 'file_dest', 'traffic_file']:
+                                          'file_read', 'file_write', 'file_dest', 'traffic_file', 'string', 'not_string', 'regexp', 'code']:
                             cmd.extend([flag, value_str])
                         else:
                             # Use shlex.quote for other arguments
