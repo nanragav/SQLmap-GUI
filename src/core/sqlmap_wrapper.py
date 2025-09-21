@@ -960,7 +960,10 @@ class SqlmapWrapper:
                             cmd.extend([flag, value_str])
                         # Special handling for SQL injection payloads and shell commands - these often contain quotes
                         # and should be passed as-is to sqlmap which will handle them properly
-                        elif param_name in ['prefix', 'suffix', 'sql_query', 'os_cmd', 'tamper', 'headers', 'cookie', 'data']:
+                        # Also include file paths that should not be quoted
+                        elif param_name in ['prefix', 'suffix', 'sql_query', 'os_cmd', 'tamper', 'headers', 'cookie', 'data', 
+                                          'shared_lib', 'log_file', 'bulk_file', 'request_file', 'sql_file', 
+                                          'file_read', 'file_write', 'file_dest', 'traffic_file']:
                             cmd.extend([flag, value_str])
                         else:
                             # Use shlex.quote for other arguments

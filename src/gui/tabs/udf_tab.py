@@ -59,6 +59,7 @@ class UdfTab(BaseTab):
     def connect_signals(self):
         """Connect widget signals"""
         self.udf_inject.toggled.connect(self.options_changed)
+        self.shared_lib.textChanged.connect(self.options_changed)
     
     def get_options(self):
         """Get UDF injection options"""
