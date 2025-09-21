@@ -329,11 +329,15 @@ class OptionGroup(QGroupBox):
                         widget.clear()
                     elif isinstance(widget, QSpinBox):
                         # Use the original default value, fallback to minimum if no default
-                        default_val = defaults.get(name, widget.minimum())
+                        default_val = defaults.get(name)
+                        if default_val is None:
+                            default_val = widget.minimum()
                         widget.setValue(default_val)
                     elif isinstance(widget, QDoubleSpinBox):
                         # Use the original default value, fallback to minimum if no default  
-                        default_val = defaults.get(name, widget.minimum())
+                        default_val = defaults.get(name)
+                        if default_val is None:
+                            default_val = widget.minimum()
                         widget.setValue(default_val)
                     elif isinstance(widget, QComboBox):
                         widget.setCurrentIndex(0)  # Reset to first item
