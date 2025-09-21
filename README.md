@@ -4,13 +4,28 @@
 [![PyQt6](https://img.shields.io/badge/PyQt6-6.0+-green.svg)](https://pypi.org/project/PyQt6/)
 [![SQLmap](https://img.shields.io/badge/SQLmap-Latest-red.svg)](https://sqlmap.org/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Documentation](https://img.shields.io/badge/Documentation-GitHub%20Pages-blue.svg)](https://nanragav.github.io/SQLmap-GUI/)
+[![Documentation](https://img.shields.io/badge/Documentation-GitHub%2### Documentation
+
+### Online Documentation
+
+Comprehensive documentation is available at our GitHub Pages site:
+
+🔗 **[SQLmap GUI Documentation](https://nanragav.github.io/SQLmap-GUI/)**
+
+### Platform-Specific Guides
+
+- 🐧 **[Linux Installation Guide](README_LINUX.md)** - Comprehensive Linux setup guide with distribution-specific instructions
+- 🪟 **[Windows Installation Guide](README_WINDOWS.md)** - Complete Windows setup guide with troubleshooting
+- 📱 **[Auto-Installation Guide](docs/auto_installation_guide.md)** - Detailed explanation of automated setup scripts
+
+### Complete Documentationblue.svg)](https://nanragav.github.io/SQLmap-GUI/)
 
 A comprehensive, user-friendly graphical interface for SQLmap - the world's most powerful SQL injection testing tool. Built with Python and PyQt6 for professional penetration testers and security researchers.
 
 ## 🎯 Features
 
 - **Complete SQLmap Integration**: Access all SQLmap parameters through an intuitive GUI
+- **🆕 Auto-Installation Scripts**: One-click setup for Linux and Windows with automatic dependency management
 - **Modular Tab Interface**: Organized tabs for different testing phases (Target, Injection, Enumeration, File System, OS Access, etc.)
 - **Real-time Validation**: Built-in parameter validation with helpful error messages
 - **Batch Processing**: Automated batch mode for efficient scanning
@@ -18,6 +33,7 @@ A comprehensive, user-friendly graphical interface for SQLmap - the world's most
 - **Session Management**: Save and load testing sessions
 - **Cross-platform**: Works on Windows, Linux, and macOS
 - **Clean Interface**: Only valid SQLmap parameters - no confusing non-existent options
+- **🔒 Security-First**: No administrator privileges required for normal operation
 
 ## 📋 Table of Contents
 
@@ -53,9 +69,70 @@ A comprehensive, user-friendly graphical interface for SQLmap - the world's most
 - **Git**: For cloning the repository
 - **Python Virtual Environment**: Recommended for dependency management
 
+### 🔐 Administrator Requirements
+
+#### Linux Systems
+
+- **Initial Setup Only**: `sudo` access required for installing system packages
+  - Python 3.8+ and development tools (`python3-dev`, `python3-venv`)
+  - Basic utilities (`git`, `unzip`, `wget`)
+  - Distribution-specific package installation (`apt`, `yum`, `dnf`, `pacman`)
+- **Normal Operation**: Runs as regular user with no elevated privileges
+- **Virtual Environment**: Created in user space (no system modifications)
+
+#### Windows Systems
+
+- **No Administrator Rights Required**: All installations go to user directories
+  - Python installed to `%USERPROFILE%\AppData\Local\Programs\Python`
+  - SQLmap downloaded to application folder
+  - Virtual environment in `.venv` subfolder
+- **Normal Operation**: Standard user privileges sufficient
+- **System Changes**: Only PATH modification (optional, user-level only)
+
+#### Security Notes
+
+- Scripts never require permanent elevation
+- All installations are user-scoped and portable
+- Virtual environments isolate dependencies
+- SQLmap runs in portable mode (no system installation required)
+
 ## 🚀 Installation
 
 ### 📦 Quick Installation (Recommended)
+
+#### Option 1: Auto-Installation Scripts (Easiest)
+
+**🐧 Linux:**
+
+```bash
+# One-click installer (recommended)
+git clone https://github.com/nanragav/SQLmap-GUI.git
+cd SQLmap-GUI
+./install_linux.sh
+
+# Or use the enhanced launcher directly
+./start_gui.sh
+```
+
+**🪟 Windows:**
+
+```cmd
+# Download the repository, then run:
+install_windows.bat
+
+# Or use the auto-launcher directly:
+start_gui.bat
+# Or PowerShell version:
+start_gui.ps1
+```
+
+**🔐 Administrator Requirements:**
+
+- **Linux**: Sudo access required only for installing system packages (Python, unzip, wget)
+- **Windows**: No administrator rights needed (installs to user directory)
+- **Normal Operation**: Both platforms run as regular user after initial setup
+
+#### Option 2: Pre-built Executables
 
 **Download pre-built executables** - No Python setup required!
 
@@ -63,15 +140,18 @@ A comprehensive, user-friendly graphical interface for SQLmap - the world's most
 2. Download the appropriate file for your system:
 
    **Windows:** `SQLmap-GUI-windows.zip`
+
    - Extract the zip file
    - Run `SQLmap-GUI.exe`
 
    **Linux:** `SQLmap-GUI-linux.tar.gz`
+
    - Extract: `tar -xzf SQLmap-GUI-linux.tar.gz`
    - Make executable: `chmod +x SQLmap-GUI`
    - Run: `./SQLmap-GUI`
 
    **macOS:** `SQLmap-GUI-macos.zip`
+
    - Extract the zip file
    - Run `SQLmap-GUI.app`
    - Note: Right-click and select "Open" the first time due to macOS security settings
@@ -89,27 +169,63 @@ If you want to run from source or contribute to development:
 
 ### Linux Installation
 
-#### Step 1: Install System Dependencies
+#### Auto-Installation (Recommended)
 
-```bash
-# Ubuntu/Debian
-sudo apt update
-sudo apt install python3 python3-pip python3-venv git
-
-# CentOS/RHEL/Fedora
-sudo yum install python3 python3-pip git  # CentOS/RHEL
-sudo dnf install python3 python3-pip git  # Fedora
-
-# Arch Linux
-sudo pacman -S python python-pip git
-```
-
-#### Step 2: Clone and Setup Project
+**Using the Installer Script:**
 
 ```bash
 # Clone the repository
 git clone https://github.com/nanragav/SQLmap-GUI.git
-cd sqlmap-gui
+cd SQLmap-GUI
+
+# Run the one-click installer
+./install_linux.sh
+```
+
+**Using the Enhanced Launcher:**
+
+```bash
+# The enhanced launcher automatically handles all dependencies
+./start_gui.sh
+```
+
+**What Gets Installed Automatically:**
+
+- **Python 3.8+** (if not present) - uses distribution package manager
+- **SQLmap** (latest) - downloaded to `sqlmap-master/` folder
+- **System Dependencies** - unzip, wget, python3-dev, python3-venv
+- **Python Dependencies** - PyQt6, psutil, requests in virtual environment
+- **Desktop Shortcuts** - `.desktop` files for easy access
+
+**Administrator Requirements:**
+
+- **Initial Setup**: `sudo` access needed for installing system packages only
+- **Normal Operation**: Runs as regular user, no elevated privileges required
+- **Virtual Environment**: Created in user space (`.venv/` folder)
+
+#### Manual Installation (Advanced Users)
+
+**Step 1: Install System Dependencies**
+
+```bash
+# Ubuntu/Debian
+sudo apt update
+sudo apt install python3 python3-pip python3-venv python3-dev git unzip wget
+
+# CentOS/RHEL/Fedora
+sudo yum install python3 python3-pip git unzip wget  # CentOS/RHEL
+sudo dnf install python3 python3-pip git unzip wget  # Fedora
+
+# Arch Linux
+sudo pacman -S python python-pip git unzip wget
+```
+
+**Step 2: Clone and Setup Project**
+
+```bash
+# Clone the repository
+git clone https://github.com/nanragav/SQLmap-GUI.git
+cd SQLmap-GUI
 
 # Create virtual environment
 python3 -m venv .venv
@@ -121,11 +237,11 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-#### Step 3: Make Scripts Executable
+**Step 3: Make Scripts Executable**
 
 ```bash
 chmod +x start_gui.sh
-chmod +x run_gui.sh
+chmod +x install_linux.sh
 ```
 
 ### Windows Installation
@@ -296,41 +412,60 @@ sqlmap --version
 
 ## 🎮 Quick Start
 
-### Linux
+### Auto-Installation (Easiest)
+
+**Linux:**
 
 ```bash
-cd sqlmap-gui
-source .venv/bin/activate
-python src/main.py
+git clone https://github.com/nanragav/SQLmap-GUI.git
+cd SQLmap-GUI
+./install_linux.sh  # One-click installer
+# or
+./start_gui.sh      # Enhanced auto-launcher
 ```
 
-### Windows
+**Windows:**
 
 ```cmd
-cd sqlmap-gui
+# Download repository, then run:
+install_windows.bat  # One-click installer
+# or
+start_gui.bat       # Auto-launcher
+# or
+start_gui.ps1       # PowerShell version
+```
+
+### Manual Launch (After Installation)
+
+**Linux:**
+
+```bash
+cd SQLmap-GUI
+source .venv/bin/activate
+python main.py
+```
+
+**Windows:**
+
+```cmd
+cd SQLmap-GUI
 .venv\Scripts\activate
-python src\main.py
+python main.py
 ```
 
 ### Using Startup Scripts
 
-#### Linux
+**Linux:**
 
 ```bash
-./start_gui.sh
-# or
-./run_gui.sh
+./start_gui.sh      # Enhanced auto-setup launcher
 ```
 
-#### Windows
+**Windows:**
 
 ```cmd
-# Create a batch file (start_gui.bat)
-@echo off
-cd /d %~dp0
-.venv\Scripts\activate
-python src\main.py
-pause
+start_gui.bat       # Batch file launcher
+start_gui.ps1       # PowerShell launcher
 ```
 
 ## 📖 Usage
@@ -561,15 +696,18 @@ This tool is designed for **educational and authorized security testing purposes
 ## 📞 Support
 
 ### Documentation
+
 - **Online Documentation**: [GitHub Pages](https://nanragav.github.io/SQLmap-GUI/)
 - **Technical Details**: See [SQLmap_GUI_Plan.md](SQLmap_GUI_Plan.md) for technical details
 
 ### Contact Information
+
 - **Email**: [sriragavendrabharath@outlook.com](mailto:sriragavendrabharath@outlook.com)
 - **GitHub Issues**: [Report bugs and request features](https://github.com/nanragav/SQLmap-GUI/issues)
 - **GitHub Discussions**: Join community discussions
 
 ### Community Support
+
 - **SQLmap Official**: [sqlmap.org](https://sqlmap.org/)
 - **Security Communities**: OWASP, Bug Bounty forums
 - **Documentation Issues**: Report documentation problems via GitHub

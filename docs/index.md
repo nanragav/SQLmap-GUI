@@ -20,6 +20,7 @@ A comprehensive graphical user interface for SQLmap - the automatic SQL injectio
 ## 📋 Table of Contents
 
 - [Quick Start](#quick-start)
+- [Auto-Installation Guide](auto_installation_guide.md) - **New!** Automated setup scripts
 - [GUI Overview](#gui-overview)
 - [Tab Reference](#tab-reference)
 - [Examples](#examples)
@@ -29,27 +30,55 @@ A comprehensive graphical user interface for SQLmap - the automatic SQL injectio
 
 ## 🎯 Quick Start
 
-### Prerequisites
+### Auto-Installation (Recommended)
 
-- **Python 3.10+**
+**🐧 Linux:**
+
+```bash
+git clone https://github.com/nanragav/SQLmap-GUI.git
+cd SQLmap-GUI
+./install_linux.sh    # One-click installer
+# or
+./start_gui.sh        # Enhanced auto-launcher
+```
+
+**🪟 Windows:**
+
+```cmd
+# Download repository, then run:
+install_windows.bat   # One-click installer
+# or
+start_gui.bat        # Auto-launcher
+```
+
+> **Note**: Auto-installation scripts handle Python, SQLmap, and all dependencies automatically. See the [Auto-Installation Guide](auto_installation_guide.md) for details.
+
+### Manual Installation
+
+#### Prerequisites
+
+- **Python 3.8+** (3.10+ recommended)
 - **PyQt6** (GUI framework)
 - **SQLmap** (command-line tool)
 - **psutil** (system monitoring)
 
-### Installation
+#### Installation Steps
 
 1. **Clone the repository:**
+
    ```bash
    git clone https://github.com/nanragav/SQLmap-GUI.git
    cd SQLmap-GUI
    ```
 
 2. **Install dependencies:**
+
    ```bash
    pip install -r requirements.txt
    ```
 
 3. **Install SQLmap:**
+
    ```bash
    # Using apt (Ubuntu/Debian)
    sudo apt install sqlmap
@@ -111,9 +140,11 @@ The SQLmap GUI is organized into 15 specialized tabs, each handling different as
 ## 📑 Tab Reference
 
 ### 1. [Target Tab](tabs/target_tab.md)
+
 Configure target specifications and connection details.
 
 **Key Options:**
+
 - **Target URL**: Main target URL for testing
 - **Direct Connection**: Direct database connection string
 - **HTTP Method**: GET, POST, PUT, DELETE, etc.
@@ -122,9 +153,11 @@ Configure target specifications and connection details.
 - **Proxy Settings**: HTTP/SOCKS proxy configuration
 
 ### 2. [Request Tab](tabs/request_tab.md)
+
 HTTP request customization and optimization.
 
 **Key Options:**
+
 - **Optimization**: Connection pooling, batch mode
 - **Timing**: Request delays, timeouts, retries
 - **Authentication**: Basic, Digest, NTLM authentication
@@ -132,9 +165,11 @@ HTTP request customization and optimization.
 - **Tor Integration**: Anonymous scanning via Tor
 
 ### 3. [Injection Tab](tabs/injection_tab.md)
+
 SQL injection payload configuration.
 
 **Key Options:**
+
 - **Parameter Selection**: Which parameters to test
 - **DBMS Selection**: Force specific database type
 - **Payload Customization**: Prefix/suffix strings
@@ -142,9 +177,11 @@ SQL injection payload configuration.
 - **Invalidation Methods**: Big numbers, logical operations
 
 ### 4. [Detection Tab](tabs/detection_tab.md)
+
 SQL injection detection parameters.
 
 **Key Options:**
+
 - **Test Level**: 1-5 (higher = more thorough)
 - **Risk Level**: 1-3 (higher = more aggressive)
 - **String Matching**: Custom success/failure patterns
@@ -152,9 +189,11 @@ SQL injection detection parameters.
 - **Second-Order**: Multi-request injection testing
 
 ### 5. [Techniques Tab](tabs/techniques_tab.md)
+
 Injection technique selection.
 
 **Key Options:**
+
 - **Boolean-based Blind**: True/false condition testing
 - **Time-based Blind**: Delay-based detection
 - **Error-based**: Database error exploitation
@@ -163,9 +202,11 @@ Injection technique selection.
 - **Inline Queries**: Subquery injection
 
 ### 6. [Enumeration Tab](tabs/enumeration_tab.md)
+
 Database structure and data extraction.
 
 **Key Options:**
+
 - **Basic Info**: Banner, users, databases, privileges
 - **Structure**: Tables, columns, schemas
 - **Data Extraction**: Dump tables, search data
@@ -173,35 +214,45 @@ Database structure and data extraction.
 - **Range Selection**: Limit rows/characters retrieved
 
 ### 7. [Fingerprint Tab](tabs/fingerprint_tab.md)
+
 Database fingerprinting and identification.
 
 ### 8. [Brute Force Tab](tabs/brute_force_tab.md)
+
 Dictionary-based attacks and common name enumeration.
 
 ### 9. [UDF Tab](tabs/udf_tab.md)
+
 User-defined function injection.
 
 ### 10. [File System Tab](tabs/file_system_tab.md)
+
 File system access and manipulation.
 
 ### 11. [OS Access Tab](tabs/os_access_tab.md)
+
 Operating system command execution.
 
 ### 12. [Windows Registry Tab](tabs/windows_registry_tab.md)
+
 Windows registry access (Windows targets only).
 
 ### 13. [General Tab](tabs/general_tab.md)
+
 General SQLmap configuration and behavior.
 
 ### 14. [Miscellaneous Tab](tabs/miscellaneous_tab.md)
+
 Additional advanced options.
 
 ### 15. [Hidden Switches Tab](tabs/hidden_switches_tab.md)
+
 Experimental and advanced features.
 
 ## 📚 Examples
 
 ### Basic SQL Injection Scan
+
 ```bash
 # Target: http://example.com/product.php?id=1
 # GUI Configuration:
@@ -212,11 +263,13 @@ Experimental and advanced features.
 ```
 
 **Generated Command:**
+
 ```bash
 sqlmap -u "http://example.com/product.php?id=1" --level=3 --risk=2 --technique=BEU --dbs --tables --columns --batch
 ```
 
 ### Advanced Scan with Custom Options
+
 ```bash
 # Target: Vulnerable login form
 # GUI Configuration:
@@ -227,11 +280,13 @@ sqlmap -u "http://example.com/product.php?id=1" --level=3 --risk=2 --technique=B
 ```
 
 **Generated Command:**
+
 ```bash
 sqlmap -u "http://example.com/login.php" --method=POST --data="username=admin&password=test" --dbms=mysql --tamper=space2comment --dump -T users --batch
 ```
 
 ### Anonymous Scanning with Tor
+
 ```bash
 # GUI Configuration:
 # - Request Tab: Tor = Enabled, Tor Port = 9050
@@ -240,6 +295,7 @@ sqlmap -u "http://example.com/login.php" --method=POST --data="username=admin&pa
 ```
 
 **Generated Command:**
+
 ```bash
 sqlmap -u "http://example.com/vuln.php?id=1" --tor --tor-port=9050 --batch
 ```
@@ -249,9 +305,11 @@ sqlmap -u "http://example.com/vuln.php?id=1" --tor --tor-port=9050 --batch
 ### Core Classes
 
 #### `SqlmapMainWindow`
+
 Main application window containing all GUI components.
 
 **Methods:**
+
 - `get_options()`: Collect all options from all tabs
 - `validate_options()`: Validate current configuration
 - `start_scan()`: Begin SQL injection testing
@@ -259,23 +317,28 @@ Main application window containing all GUI components.
 - `load_profile()`: Load saved configuration
 
 #### `SqlmapWrapper`
+
 Handles SQLmap command generation and execution.
 
 **Methods:**
+
 - `build_command(options)`: Generate SQLmap command from GUI options
 - `validate_options(options)`: Check option compatibility
 - `create_process(options)`: Start SQLmap process
 
 #### `MutualExclusionManager`
+
 Manages conflicting option combinations.
 
 **Methods:**
+
 - `register_option(name, widget)`: Register option for conflict checking
 - `update_option_state(name, value)`: Update option state and check conflicts
 
 ### Option Groups
 
 Each tab contains multiple `OptionGroup` instances that handle:
+
 - Widget creation and layout
 - Value validation and formatting
 - Signal emission for real-time updates
@@ -286,15 +349,19 @@ Each tab contains multiple `OptionGroup` instances that handle:
 ### Common Issues
 
 #### GUI Won't Start
+
 **Error:** `ModuleNotFoundError: No module named 'PyQt6'`
 **Solution:**
+
 ```bash
 pip install PyQt6 PyQt6-Qt6
 ```
 
 #### SQLmap Not Found
+
 **Error:** `sqlmap: command not found`
 **Solution:**
+
 ```bash
 # Install via package manager
 sudo apt install sqlmap
@@ -303,15 +370,19 @@ sudo apt install sqlmap
 ```
 
 #### Performance Issues
+
 **Symptoms:** GUI is slow, unresponsive, or hanging
 **Solutions:**
+
 1. Use **Help → Performance → High Performance Mode**
 2. Close other resource-intensive applications
 3. Use **Help → Performance → Optimize Performance**
 4. Restart the GUI application
 
 #### CPU/Memory Usage High
+
 **Solutions:**
+
 1. Enable **Help → Performance → Pause Resource Monitoring**
 2. Use **Help → Performance → High Performance Mode**
 3. Close unnecessary tabs/windows
@@ -320,6 +391,7 @@ sudo apt install sqlmap
 ### Debug Information
 
 Access debug information via:
+
 - **Help → Debug Tabs**: Check tab integrity
 - **Help → Debug CPU Monitoring**: System resource details
 - **Help → Performance → Optimize Performance**: Manual cleanup
@@ -331,12 +403,14 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 ### Development Setup
 
 1. **Fork and clone:**
+
    ```bash
    git clone https://github.com/nanragav/SQLmap-GUI.git
    cd SQLmap-GUI
    ```
 
 2. **Create virtual environment:**
+
    ```bash
    python3 -m venv venv
    source venv/bin/activate  # Linux/Mac
@@ -345,6 +419,7 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
    ```
 
 3. **Install development dependencies:**
+
    ```bash
    pip install -r requirements.txt
    pip install -r requirements-dev.txt
