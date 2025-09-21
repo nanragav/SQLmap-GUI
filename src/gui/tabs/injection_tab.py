@@ -135,18 +135,6 @@ class InjectionTab(QWidget):
                 'label': 'Turn Off String Escaping Mechanism'
             },
             {
-                'name': 'prefix',
-                'type': 'text',
-                'label': 'Injection Payload Prefix String',
-                'placeholder': '\'); --'
-            },
-            {
-                'name': 'suffix',
-                'type': 'text',
-                'label': 'Injection Payload Suffix String',
-                'placeholder': '-- -'
-            },
-            {
                 'name': 'tamper',
                 'type': 'combo',
                 'label': 'Use Tamper Scripts',

@@ -958,6 +958,10 @@ class SqlmapWrapper:
                         # Special handling for URLs and similar parameters - don't quote them
                         if param_name in ['url', 'direct', 'second_url', 'proxy']:
                             cmd.extend([flag, value_str])
+                        # Special handling for SQL injection payloads and shell commands - these often contain quotes
+                        # and should be passed as-is to sqlmap which will handle them properly
+                        elif param_name in ['prefix', 'suffix', 'sql_query', 'os_cmd', 'tamper', 'headers', 'cookie', 'data']:
+                            cmd.extend([flag, value_str])
                         else:
                             # Use shlex.quote for other arguments
                             quoted_value = shlex.quote(value_str)

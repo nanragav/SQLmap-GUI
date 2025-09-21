@@ -38,11 +38,7 @@ class TechniquesTab(QWidget):
         time_group = self.create_time_group()
         layout.addWidget(time_group)
         
-        # Union-based options
-        union_group = self.create_union_group()
-        layout.addWidget(union_group)
-        
-        # Removed empty groups: boolean, error, oob
+        # Removed empty groups: union, boolean, error, oob
         
         layout.addStretch()
         scroll_content.setLayout(layout)
@@ -110,22 +106,7 @@ class TechniquesTab(QWidget):
         
         return OptionGroup("Time-based Blind", time_options, self.mutual_exclusion_manager)
     
-    def create_union_group(self) -> QGroupBox:
-        """Create UNION-based injection options"""
-        # Removed duplicate union options (already exist in Detection tab)
-        # union_cols, union_char, union_from
-        union_options = [
-            {
-                'name': 'union_values',
-                'type': 'text',
-                'label': 'Column Values to Use in UNION',
-                'placeholder': '1,2,3,4,5'
-            }
-        ]
-        
-        return OptionGroup("UNION Query-based", union_options, self.mutual_exclusion_manager)
-    
-    # Removed create_boolean_group, create_error_group, create_oob_group methods
+    # Removed create_union_group, create_boolean_group, create_error_group, create_oob_group methods
     
     def get_options(self) -> Dict[str, Any]:
         """Get all options from this tab"""

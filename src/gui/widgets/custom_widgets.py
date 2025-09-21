@@ -315,6 +315,12 @@ class OptionGroup(QGroupBox):
     def reset_values(self):
         """Reset all widgets to their default values"""
         try:
+            # Create a mapping of option names to their default values
+            defaults = {}
+            for option in self.options:
+                name = option['name']
+                defaults[name] = option.get('default', None)
+            
             for name, widget in self.widgets.items():
                 try:
                     if isinstance(widget, QCheckBox):
@@ -322,9 +328,13 @@ class OptionGroup(QGroupBox):
                     elif isinstance(widget, (QLineEdit, ValidatedLineEdit)):
                         widget.clear()
                     elif isinstance(widget, QSpinBox):
-                        widget.setValue(widget.minimum())
+                        # Use the original default value, fallback to minimum if no default
+                        default_val = defaults.get(name, widget.minimum())
+                        widget.setValue(default_val)
                     elif isinstance(widget, QDoubleSpinBox):
-                        widget.setValue(widget.minimum())
+                        # Use the original default value, fallback to minimum if no default  
+                        default_val = defaults.get(name, widget.minimum())
+                        widget.setValue(default_val)
                     elif isinstance(widget, QComboBox):
                         widget.setCurrentIndex(0)  # Reset to first item
                 except Exception as e:
