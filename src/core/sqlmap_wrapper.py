@@ -964,7 +964,7 @@ class SqlmapWrapper:
                         # Also include file paths and detection strings that should not be quoted
                         elif param_name in ['prefix', 'suffix', 'sql_query', 'os_cmd', 'tamper', 'headers', 'cookie', 'data', 
                                           'shared_lib', 'log_file', 'bulk_file', 'request_file', 'sql_file', 
-                                          'file_read', 'file_write', 'file_dest', 'traffic_file', 'string', 'not_string', 'regexp', 'code']:
+                                          'file_read', 'file_write', 'file_dest', 'traffic_file', 'string', 'not_string', 'regexp', 'code', 'where']:
                             cmd.extend([flag, value_str])
                         else:
                             # Use shlex.quote for other arguments
