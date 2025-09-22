@@ -8,34 +8,24 @@ echo Starting SQLmap GUI for Windows...
 echo.
 
 REM Set variables
-set "PYTHON_VERSION=3.12.0"
-set "PYTHON_URL=https://www.python.org/ftp/python/!PYTHON_VERSION!/python-!PYTHON_VERSION!-amd64.exe"
-set "SQLMAP_URL=https://github.com/sqlmapproject/sqlmap/archive/master.zip"
 set "SCRIPT_DIR=%~dp0"
 set "VENV_DIR=%SCRIPT_DIR%.venv"
-set "PYTHON_INSTALL_DIR=%USERPROFILE%\AppData\Local\Programs\Python\Python312"
-set "SQLMAP_DIR=%SCRIPT_DIR%sqlmap-master"
-
-REM Function to check if command exists
-:check_command
-where %1 >nul 2>&1
-exit /b %errorlevel%
 
 REM Check if Python is installed
 echo Checking for Python installation...
-call :check_command python
+where python >nul 2>&1
 if %errorlevel% equ 0 (
-    echo ✓ Python found
+    echo [OK] Python found
     set "PYTHON_CMD=python"
     goto :check_python_version
 ) else (
-    call :check_command py
+    where py >nul 2>&1
     if %errorlevel% equ 0 (
-        echo ✓ Python launcher found
+        echo [OK] Python launcher found
         set "PYTHON_CMD=py"
         goto :check_python_version
     ) else (
-        echo ✗ Python not found
+        echo [ERROR] Python not found
         goto :install_python
     )
 )
@@ -45,17 +35,16 @@ echo Checking Python version...
 for /f "tokens=2" %%i in ('!PYTHON_CMD! --version 2^>^&1') do set "CURRENT_VERSION=%%i"
 echo Current Python version: !CURRENT_VERSION!
 
-REM Extract major.minor version
 for /f "tokens=1,2 delims=." %%a in ("!CURRENT_VERSION!") do (
     set "MAJOR=%%a"
     set "MINOR=%%b"
 )
 
 if !MAJOR! geq 3 if !MINOR! geq 8 (
-    echo ✓ Python version is compatible (3.8+)
+    echo [OK] Python version is compatible (3.8+)
     goto :check_sqlmap
 ) else (
-    echo ✗ Python version is too old (need 3.8+)
+    echo [ERROR] Python version is too old (need 3.8+)
     goto :install_python
 )
 
@@ -116,25 +105,25 @@ echo.
 echo Checking for SQLmap...
 
 REM Check if sqlmap is in PATH
-call :check_command sqlmap
+where sqlmap >nul 2>&1
 if %errorlevel% equ 0 (
-    echo ✓ SQLmap found in PATH
+    echo [OK] SQLmap found in PATH
     goto :setup_venv
 )
 
 REM Check if sqlmap exists in script directory
 if exist "%SCRIPT_DIR%sqlmap.py" (
-    echo ✓ SQLmap found in script directory
+    echo [OK] SQLmap found in script directory
     goto :setup_venv
 )
 
 REM Check if sqlmap-master directory exists
 if exist "%SQLMAP_DIR%\sqlmap.py" (
-    echo ✓ SQLmap found in sqlmap-master directory
+    echo [OK] SQLmap found in sqlmap-master directory
     goto :setup_venv
 )
 
-echo ✗ SQLmap not found
+echo [ERROR] SQLmap not found
 goto :install_sqlmap
 
 :install_sqlmap

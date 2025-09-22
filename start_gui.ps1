@@ -48,11 +48,11 @@ Write-Host "Checking for Python installation..." -ForegroundColor Cyan
 $PythonCmd = $null
 if (Test-Command "python") {
     $PythonCmd = "python"
-    Write-Host "✓ Python found" -ForegroundColor Green
+    Write-Host "[OK] Python found" -ForegroundColor Green
 }
 elseif (Test-Command "py") {
     $PythonCmd = "py"
-    Write-Host "✓ Python launcher found" -ForegroundColor Green
+    Write-Host "[OK] Python launcher found" -ForegroundColor Green
 }
 else {
     Write-Host "✗ Python not found" -ForegroundColor Red
@@ -69,7 +69,7 @@ if ($PythonCmd -and -not $Force) {
         
         $Version = [Version]$CurrentVersion
         if ($Version.Major -ge 3 -and $Version.Minor -ge 8) {
-            Write-Host "✓ Python version is compatible (3.8+)" -ForegroundColor Green
+            Write-Host "[OK] Python version is compatible (3.8+)" -ForegroundColor Green
         }
         else {
             Write-Host "✗ Python version is too old (need 3.8+)" -ForegroundColor Red
